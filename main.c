@@ -2,60 +2,60 @@
 #include "intrins.h"
 
 
-//ÀàÐÍ¶¨Òå
+//????
 typedef unsigned int u16;
 typedef unsigned char u8;
 
 
-//½Ó¿Ú¶¨Òå
+//????
 
-#define LCD1602_DATAPORT P0//LCDÊý¾Ý¶Ë¿Ú
-sbit DIN  = P0^4;	  //ADCÊäÈë
-sbit CS   = P0^5;	  //ADCÆ¬Ñ¡
-sbit CLK  = P0^6;	  //ADCÊ±ÖÓ
-sbit DOUT = P0^7;	  //ADCÊä³ö
-#define KEY_MATRIX_PORT	P1//¿ª·¢°å¾ØÕó¼üÅÌ
+#define LCD1602_DATAPORT P0//LCD????
 
-sbit PUMP=P2^0;//Ë®±Ã½ÓÈëP2^0
-sbit SPRAY=P2^1;//Îí»¯Æ÷½ÓÈë2^1
-sbit LIGHT=P2^2;//LED²¹¹âµÆ½ÓÈëP2^2
-sbit MOISTURE_AIR=P2^3;//¿ÕÆøÊª¶È´«¸ÐÆ÷½ÓÈëP2^3
-sbit TEMPATURE=P2^4;//ÎÂ¶È´«¸ÐÆ÷½ÓÈëP2^4
-sbit LCD1602_RW=P2^5;//LCD¶ÁÐ´Ñ¡Ôñ
-sbit LCD1602_RS=P2^6;//LCDÊý¾ÝÃüÁîÑ¡Ôñ
-sbit LCD1602_E=P2^7; //LCDÊ¹ÄÜÐÅºÅ
+#define KEY_MATRIX_PORT	P1//???????
 
-sbit STEPMOTOR1=P3^0;//²½½øµç»ú1½ÓÈëP3^0£¬´ýÇý¶¯°å
-sbit STEPMOTOR2=P3^1;//²½½øµç»ú2½ÓÈëP3^1£¬´ýÇý¶¯°å
-sbit STEPMOTOR3=P3^2;//²½½øµç»ú3½ÓÈëP3^2£¬´ýÇý¶¯°å
-sbit STEPMOTOR4=P3^3;//²½½øµç»ú4½ÓÈëP3^3£¬´ýÇý¶¯°å
+sbit PUMP=P2^0;//????P2^0
+sbit SPRAY=P2^1;//?????2^1
+sbit LIGHT=P2^2;//LED?????P2^2
+sbit MOISTURE_AIR=P2^3;//?????????P2^3
+sbit TEMPATURE=P2^4;//???????P2^4
+sbit LCD1602_RW=P2^5;//LCD????
+sbit LCD1602_RS=P2^6;//LCD??????
+sbit LCD1602_E=P2^7; //LCD????
 
+sbit STEPMOTOR1=P3^0;//????1??P3^0,????
+sbit STEPMOTOR2=P3^1;//????2??P3^1,????
+sbit STEPMOTOR3=P3^2;//????3??P3^2,????
+sbit STEPMOTOR4=P3^3;//????4??P3^3,????
+sbit DIN  = P3^4;	  //ADC??
+sbit CS   = P3^5;	  //ADC??
+sbit CLK  = P3^6;	  //ADC??
+sbit DOUT = P3^7;	  //ADC??
 // 
-// sbit MOISTURE_SOIL=P3^1;//ÍÁÈÀÊª¶È´«¸ÐÆ÷½ÓÈëADC
-// sbit WATER_LEVEL=P3^2;//Ë®Î»´«¸ÐÆ÷½ÓÈëADC^E4
-//sbit LIGHT_INTENSITY=P2^4;//¹âÕÕÇ¿¶È´«¸ÐÆ÷½ÓÈëADC^A4
-//sbit WIFI_IO=P2^0;//Ô¤ÁôWIFI½Ó¿ÚÎª£¿£¿£¿
+// sbit MOISTURE_SOIL=P3^1;//?????????ADC
+// sbit WATER_LEVEL=P3^2;//???????ADC^E4
+//sbit LIGHT_INTENSITY=P2^4;//?????????ADC^A4
+//sbit WIFI_IO=P2^0;//??WIFI??????
 
-//È«¾ÖÊý¾Ý
+//????
 
-//LCD1602Êý¾Ý¿Ú4Î»ºÍ8Î»¶¨Òå£¬ÈôÎª1£¬ÔòÎªLCD1602ËÄÎ»Êý¾Ý¿ÚÇý¶¯£¬·´Ö®Îª8Î»
-#define LCD1602_4OR8_DATA_INTERFACE	1	//Ä¬ÈÏÊ¹ÓÃ8Î»Êý¾Ý¿ÚLCD1602
+//LCD1602???4??8???,??1,??LCD1602???????,???8?
+#define LCD1602_4OR8_DATA_INTERFACE	0	//????8????LCD1602
 
-// ¶¨Òå²½½øµç»úËÙ¶È£¬ÖµÔ½Ð¡£¬ËÙ¶ÈÔ½¿ì
-#define STEPMOTOR_MAXSPEED        100//²½½øµç»ú×î´óËÙ¶È£¬²»ÄÜÐ¡ÓÚ1
-#define STEPMOTOR_MINSPEED        350//²½½øµç»ú×îÐ¡ËÙ¶È
-#define STEPMOTOR_SHIELD_HIGHT    10//ÕÚ¹â°å¸ß¶È
-#define STEPMOTOR_SHIELD_RANGE    300//ÕÚ¹â°åÒÆ¶¯Ê±¼ä±ÈÀý
-u16 StepMotor_status=0;//²½½øµç»úÕÚ¹â°å×´Ì¬±äÁ¿£¬0Îª×îµÍÎ»ÖÃ£¬1Îª×î¸ßÎ»ÖÃ
+// ????????,???,????
+#define STEPMOTOR_MAXSPEED        100//????????,????1
+#define STEPMOTOR_MINSPEED        350//????????
+#define STEPMOTOR_SHIELD_HIGHT    10//?????
+#define STEPMOTOR_SHIELD_RANGE    300//?????????
+u16 StepMotor_status=0;//???????????,0?????,1?????
 
-//¹«¹²º¯Êý
+//????
 
-//ÑÓÊ±º¯Êý£¬ÊäÈëint x£¬ÑÓÊ±x/100ºÁÃë
+//????,??int x,??x/100??
 void delay_10us(u16 ten_us){
 while(ten_us--);
 }
 
-//ÑÓÊ±º¯Êý£¬ÊäÈëint x£¬ÑÓÊ±xºÁÃë
+//????,??int x,??x??
 void delay_ms(u16 ms)
 {
 	u16 i,j;
@@ -63,12 +63,12 @@ void delay_ms(u16 ms)
 		for(j=110;j>0;j--);
 }
 
-//ÊýÄ£×ª»»º¯Êý²¿·Ö
+//????????
 /*******************************************************************************
-* º¯ Êý Ãû       : xpt2046_wirte_data
-* º¯Êý¹¦ÄÜ		 : XPT2046Ð´Êý¾Ý
-* Êä    Èë       : dat£ºÐ´ÈëµÄÊý¾Ý
-* Êä    ³ö    	 : ÎÞ
+* ? ? ?       : xpt2046_wirte_data
+* ????		 : XPT2046???
+* ?    ?       : dat:?????
+* ?    ?    	 : ?
 *******************************************************************************/
 void xpt2046_wirte_data(u8 dat)
 {
@@ -76,11 +76,11 @@ void xpt2046_wirte_data(u8 dat)
 
 	CLK = 0;
 	_nop_();
-	for(i=0;i<8;i++)//Ñ­»·8´Î£¬Ã¿´Î´«ÊäÒ»Î»£¬¹²Ò»¸ö×Ö½Ú
+	for(i=0;i<8;i++)//??8?,??????,?????
 	{
-		DIN = dat >> 7;//ÏÈ´«¸ßÎ»ÔÙ´«µÍÎ»
-		dat <<= 1;//½«µÍÎ»ÒÆµ½¸ßÎ»
-		CLK = 0;//CLKÓÉµÍµ½¸ß²úÉúÒ»¸öÉÏÉýÑØ£¬´Ó¶øÐ´ÈëÊý¾Ý
+		DIN = dat >> 7;//????????
+		dat <<= 1;//???????
+		CLK = 0;//CLK???????????,??????
 		_nop_();	
 		CLK = 1;
 		_nop_();
@@ -88,10 +88,10 @@ void xpt2046_wirte_data(u8 dat)
 }
 
 /*******************************************************************************
-* º¯ Êý Ãû       : xpt2046_read_data
-* º¯Êý¹¦ÄÜ		 : XPT2046¶ÁÊý¾Ý
-* Êä    Èë       : ÎÞ
-* Êä    ³ö    	 : XPT2046·µ»Ø12Î»Êý¾Ý
+* ? ? ?       : xpt2046_read_data
+* ????		 : XPT2046???
+* ?    ?       : ?
+* ?    ?    	 : XPT2046??12???
 *******************************************************************************/
 u16	xpt2046_read_data(void)
 {
@@ -100,148 +100,148 @@ u16	xpt2046_read_data(void)
 
 	CLK = 0;
 	_nop_();
-	for(i=0;i<12;i++)//Ñ­»·12´Î£¬Ã¿´Î¶ÁÈ¡Ò»Î»£¬´óÓÚÒ»¸ö×Ö½ÚÊý£¬ËùÒÔ·µ»ØÖµÀàÐÍÊÇu16
+	for(i=0;i<12;i++)//??12?,??????,???????,????????u16
 	{
 		dat <<= 1;
 		CLK = 1;
 		_nop_();
-		CLK = 0; //CLKÓÉ¸ßµ½µÍ²úÉúÒ»¸öÏÂ½µÑØ£¬´Ó¶ø¶ÁÈ¡Êý¾Ý
+		CLK = 0; //CLK???????????,??????
 		_nop_();
-		dat |= DOUT;//ÏÈ¶ÁÈ¡¸ßÎ»£¬ÔÙ¶ÁÈ¡µÍÎ»¡£	
+		dat |= DOUT;//?????,??????	
 	}
 	return dat;	
 }
 
 /*******************************************************************************
-* º¯ Êý Ãû       : xpt2046_read_adc_value
-* º¯Êý¹¦ÄÜ		 : XPT2046¶ÁADÊý¾Ý
-* Êä    Èë       : cmd£ºÖ¸Áî
-* Êä    ³ö    	 : XPT2046·µ»ØADÖµ
+* ? ? ?       : xpt2046_read_adc_value
+* ????		 : XPT2046?AD??
+* ?    ?       : cmd:??
+* ?    ?    	 : XPT2046??AD?
 *******************************************************************************//////////////////////////////////////////////////
 u16 xpt2046_read_adc_value(u8 cmd)
 {
 	u8 i;
 	u16 adc_value=0;
 
-	CLK = 0;//ÏÈÀ­µÍÊ±ÖÓ
-	CS  = 0;//Ê¹ÄÜXPT2046
-	xpt2046_wirte_data(cmd);//·¢ËÍÃüÁî×Ö
-	for(i=6; i>0; i--);//ÑÓÊ±µÈ´ý×ª»»½á¹û
+	CLK = 0;//?????
+	CS  = 0;//??XPT2046
+	xpt2046_wirte_data(cmd);//?????
+	for(i=6; i>0; i--);//????????
 	CLK = 1;
 	_nop_();
-	CLK = 0;//·¢ËÍÒ»¸öÊ±ÖÓ£¬Çå³ýBUSY
+	CLK = 0;//??????,??BUSY
 	_nop_();
 	adc_value=xpt2046_read_data();
-	CS = 1;//¹Ø±ÕXPT2046
+	CS = 1;//??XPT2046
 	return adc_value;
 }
 
-//LCDº¯Êý¶¨Òå
+//LCD????
 /*******************************************************************************
-* º¯ Êý Ãû       : lcd1602_write_cmd
-* º¯Êý¹¦ÄÜ		 : LCD1602Ð´ÃüÁî
-* Êä    Èë       : cmd£ºÖ¸Áî
-* Êä    ³ö    	 : ÎÞ
+* ? ? ?       : lcd1602_write_cmd
+* ????		 : LCD1602???
+* ?    ?       : cmd:??
+* ?    ?    	 : ?
 *******************************************************************************/
-#if (LCD1602_4OR8_DATA_INTERFACE==0)//8Î»LCD
+#if (LCD1602_4OR8_DATA_INTERFACE==0)//8?LCD
 void lcd1602_write_cmd(u8 cmd)
 {
-	LCD1602_RS=0;//Ñ¡ÔñÃüÁî
-	LCD1602_RW=0;//Ñ¡ÔñÐ´
+	LCD1602_RS=0;//????
+	LCD1602_RW=0;//???
 	LCD1602_E=0;
-	LCD1602_DATAPORT=cmd;//×¼±¸ÃüÁî
+	LCD1602_DATAPORT=cmd;//????
 	delay_ms(1);
-	LCD1602_E=1;//Ê¹ÄÜ½ÅEÏÈÉÏÉýÑØÐ´Èë
+	LCD1602_E=1;//???E??????
 	delay_ms(1);
-	LCD1602_E=0;//Ê¹ÄÜ½ÅEºó¸ºÌø±äÍê³ÉÐ´Èë	
+	LCD1602_E=0;//???E????????	
 }
-#else	//4Î»LCD
+#else	//4?LCD
 void lcd1602_write_cmd(u8 cmd)
 {
-	LCD1602_RS=0;//Ñ¡ÔñÃüÁî
-	LCD1602_RW=0;//Ñ¡ÔñÐ´
+	LCD1602_RS=0;//????
+	LCD1602_RW=0;//???
 	LCD1602_E=0;
-	LCD1602_DATAPORT=cmd;//×¼±¸ÃüÁî
+	LCD1602_DATAPORT=cmd;//????
 	delay_ms(1);
-	LCD1602_E=1;//Ê¹ÄÜ½ÅEÏÈÉÏÉýÑØÐ´Èë
+	LCD1602_E=1;//???E??????
 	delay_ms(1);
-	LCD1602_E=0;//Ê¹ÄÜ½ÅEºó¸ºÌø±äÍê³ÉÐ´Èë
+	LCD1602_E=0;//???E????????
 	
-	LCD1602_DATAPORT=cmd<<4;//×¼±¸ÃüÁî
+	LCD1602_DATAPORT=cmd<<4;//????
 	delay_ms(1);
-	LCD1602_E=1;//Ê¹ÄÜ½ÅEÏÈÉÏÉýÑØÐ´Èë
+	LCD1602_E=1;//???E??????
 	delay_ms(1);
-	LCD1602_E=0;//Ê¹ÄÜ½ÅEºó¸ºÌø±äÍê³ÉÐ´Èë	
+	LCD1602_E=0;//???E????????	
 }
 #endif
 
 /*******************************************************************************
-* º¯ Êý Ãû       : lcd1602_write_data
-* º¯Êý¹¦ÄÜ		 : LCD1602Ð´Êý¾Ý
-* Êä    Èë       : dat£ºÊý¾Ý
-* Êä    ³ö    	 : ÎÞ
+* ? ? ?       : lcd1602_write_data
+* ????		 : LCD1602???
+* ?    ?       : dat:??
+* ?    ?    	 : ?
 *******************************************************************************/
-#if (LCD1602_4OR8_DATA_INTERFACE==0)//8Î»LCD
+#if (LCD1602_4OR8_DATA_INTERFACE==0)//8?LCD
 void lcd1602_write_data(u8 dat) 
 {
-	LCD1602_RS=1;//Ñ¡ÔñÊý¾Ý
-	LCD1602_RW=0;//Ñ¡ÔñÐ´
+	LCD1602_RS=1;//????
+	LCD1602_RW=0;//???
 	LCD1602_E=0;
-	LCD1602_DATAPORT=dat;//×¼±¸Êý¾Ý
+	LCD1602_DATAPORT=dat;//????
 	delay_ms(1);
-	LCD1602_E=1;//Ê¹ÄÜ½ÅEÏÈÉÏÉýÑØÐ´Èë
+	LCD1602_E=1;//???E??????
 	delay_ms(1);
-	LCD1602_E=0;//Ê¹ÄÜ½ÅEºó¸ºÌø±äÍê³ÉÐ´Èë		
+	LCD1602_E=0;//???E????????		
 }
 #else
 void lcd1602_write_data(u8 dat) 
 {
-	LCD1602_RS=1;//Ñ¡ÔñÊý¾Ý
-	LCD1602_RW=0;//Ñ¡ÔñÐ´
+	LCD1602_RS=1;//????
+	LCD1602_RW=0;//???
 	LCD1602_E=0;
-	LCD1602_DATAPORT=dat;//×¼±¸Êý¾Ý
+	LCD1602_DATAPORT=dat;//????
 	delay_ms(1);
-	LCD1602_E=1;//Ê¹ÄÜ½ÅEÏÈÉÏÉýÑØÐ´Èë
+	LCD1602_E=1;//???E??????
 	delay_ms(1);
-	LCD1602_E=0;//Ê¹ÄÜ½ÅEºó¸ºÌø±äÍê³ÉÐ´Èë
+	LCD1602_E=0;//???E????????
 	
-	LCD1602_DATAPORT=dat<<4;//×¼±¸Êý¾Ý
+	LCD1602_DATAPORT=dat<<4;//????
 	delay_ms(1);
-	LCD1602_E=1;//Ê¹ÄÜ½ÅEÏÈÉÏÉýÑØÐ´Èë
+	LCD1602_E=1;//???E??????
 	delay_ms(1);
-	LCD1602_E=0;//Ê¹ÄÜ½ÅEºó¸ºÌø±äÍê³ÉÐ´Èë		
+	LCD1602_E=0;//???E????????		
 }
 #endif
 
 /*******************************************************************************
-* º¯ Êý Ãû       : lcd1602_init
-* º¯Êý¹¦ÄÜ		 : LCD1602³õÊ¼»¯
-* Êä    Èë       : ÎÞ
-* Êä    ³ö    	 : ÎÞ
+* ? ? ?       : lcd1602_init
+* ????		 : LCD1602???
+* ?    ?       : ?
+* ?    ?    	 : ?
 *******************************************************************************//////////////////////////////////////////////////
-#if (LCD1602_4OR8_DATA_INTERFACE==0)//8Î»LCD
+#if (LCD1602_4OR8_DATA_INTERFACE==0)//8?LCD
 void lcd1602_init(void)
 {
-	lcd1602_write_cmd(0x38);//Êý¾Ý×ÜÏß8Î»£¬ÏÔÊ¾2ÐÐ£¬5*7µãÕó/×Ö·û
-	lcd1602_write_cmd(0x0c);//ÏÔÊ¾¹¦ÄÜ¿ª£¬ÎÞ¹â±ê£¬¹â±êÉÁË¸
-	lcd1602_write_cmd(0x06);//Ð´ÈëÐÂÊý¾Ýºó¹â±êÓÒÒÆ£¬ÏÔÊ¾ÆÁ²»ÒÆ¶¯
-	lcd1602_write_cmd(0x01);//ÇåÆÁ	
+	lcd1602_write_cmd(0x38);//????8?,??2?,5*7??/??
+	lcd1602_write_cmd(0x0c);//?????,???,????
+	lcd1602_write_cmd(0x06);//??????????,??????
+	lcd1602_write_cmd(0x01);//??	
 }
 #else
 void lcd1602_init(void)
 {
-	lcd1602_write_cmd(0x28);//Êý¾Ý×ÜÏß4Î»£¬ÏÔÊ¾2ÐÐ£¬5*7µãÕó/×Ö·û
-	lcd1602_write_cmd(0x0c);//ÏÔÊ¾¹¦ÄÜ¿ª£¬ÎÞ¹â±ê£¬¹â±êÉÁË¸
-	lcd1602_write_cmd(0x06);//Ð´ÈëÐÂÊý¾Ýºó¹â±êÓÒÒÆ£¬ÏÔÊ¾ÆÁ²»ÒÆ¶¯
-	lcd1602_write_cmd(0x01);//ÇåÆÁ	
+	lcd1602_write_cmd(0x28);//????4?,??2?,5*7??/??
+	lcd1602_write_cmd(0x0c);//?????,???,????
+	lcd1602_write_cmd(0x06);//??????????,??????
+	lcd1602_write_cmd(0x01);//??	
 }
 #endif
 
 /*******************************************************************************
-* º¯ Êý Ãû       : lcd1602_clear
-* º¯Êý¹¦ÄÜ		 : LCD1602ÇåÆÁ
-* Êä    Èë       : ÎÞ
-* Êä    ³ö    	 : ÎÞ
+* ? ? ?       : lcd1602_clear
+* ????		 : LCD1602??
+* ?    ?       : ?
+* ?    ?    	 : ?
 *******************************************************************************/
 void lcd1602_clear(void)
 {
@@ -249,40 +249,40 @@ void lcd1602_clear(void)
 }
 
 /*******************************************************************************
-* º¯ Êý Ãû       : lcd1602_show_string
-* º¯Êý¹¦ÄÜ		 : LCD1602ÏÔÊ¾×Ö·û
-* Êä    Èë       : x,y£ºÏÔÊ¾×ø±ê£¬x=0~15£¬y=0~1;
-				   str£ºÏÔÊ¾×Ö·û´®
-* Êä    ³ö    	 : ÎÞ
+* ? ? ?       : lcd1602_show_string
+* ????		 : LCD1602????
+* ?    ?       : x,y:????,x=0~15,y=0~1;
+				   str:?????
+* ?    ?    	 : ?
 *******************************************************************************//////////////////////////////////////////////////
 void lcd1602_show_string(u8 x,u8 y,u8 *str)
 {
 	u8 i=0;
 
-	if(y>1||x>15)return;//ÐÐÁÐ²ÎÊý²»¶ÔÔòÇ¿ÖÆÍË³ö
+	if(y>1||x>15)return;//???????????
 
-	if(y<1)	//µÚ1ÐÐÏÔÊ¾
+	if(y<1)	//?1???
 	{	
-		while(*str!='\0')//×Ö·û´®ÊÇÒÔ'\0'½áÎ²£¬Ö»ÒªÇ°ÃæÓÐÄÚÈÝ¾ÍÏÔÊ¾
+		while(*str!='\0')//?????'\0'??,??????????
 		{
-			if(i<16-x)//Èç¹û×Ö·û³¤¶È³¬¹ýµÚÒ»ÐÐÏÔÊ¾·¶Î§£¬ÔòÔÚµÚ¶þÐÐ¼ÌÐøÏÔÊ¾
+			if(i<16-x)//???????????????,?????????
 			{
-				lcd1602_write_cmd(0x80+i+x);//µÚÒ»ÐÐÏÔÊ¾µØÖ·ÉèÖÃ	
+				lcd1602_write_cmd(0x80+i+x);//?????????	
 			}
 			else
 			{
-				lcd1602_write_cmd(0x40+0x80+i+x-16);//µÚ¶þÐÐÏÔÊ¾µØÖ·ÉèÖÃ	
+				lcd1602_write_cmd(0x40+0x80+i+x-16);//?????????	
 			}
-			lcd1602_write_data(*str);//ÏÔÊ¾ÄÚÈÝ
-			str++;//Ö¸ÕëµÝÔö
+			lcd1602_write_data(*str);//????
+			str++;//????
 			i++;	
 		}	
 	}
-	else	//µÚ2ÐÐÏÔÊ¾
+	else	//?2???
 	{
 		while(*str!='\0')
 		{
-			if(i<16-x) //Èç¹û×Ö·û³¤¶È³¬¹ýµÚ¶þÐÐÏÔÊ¾·¶Î§£¬ÔòÔÚµÚÒ»ÐÐ¼ÌÐøÏÔÊ¾
+			if(i<16-x) //???????????????,?????????
 			{
 				lcd1602_write_cmd(0x80+0x40+i+x);	
 			}
@@ -297,43 +297,43 @@ void lcd1602_show_string(u8 x,u8 y,u8 *str)
 	}				
 }
 
-//¾ØÕó¼üÅÌº¯Êý
+//??????
 /*******************************************************************************
-* º¯ Êý Ãû       : key_matrix_flip_scan
-* º¯Êý¹¦ÄÜ		 : Ê¹ÓÃÏß·­×ªÉ¨Ãè·½·¨£¬¼ì²â¾ØÕó°´¼üÊÇ·ñ°´ÏÂ£¬°´ÏÂÔò·µ»Ø¶ÔÓ¦¼üÖµ
-* Êä    Èë       : ÎÞ
-* Êä    ³ö    	 : key_value£º1-16£¬¶ÔÓ¦S1-S16¼ü£¬
-				   0£º°´¼üÎ´°´ÏÂ
+* ? ? ?       : key_matrix_flip_scan
+* ????		 : ?????????,??????????,?????????
+* ?    ?       : ?
+* ?    ?    	 : key_value:1-16,??S1-S16?,
+				   0:?????
 *******************************************************************************//////////////////////////////////////////////////
 u8 key_matrix_flip_scan(void)
 {
 	static u8 key_value=0;
 
-	KEY_MATRIX_PORT=0x0f;//¸øËùÓÐÐÐ¸³Öµ0£¬ÁÐÈ«Îª1
-	if(KEY_MATRIX_PORT!=0x0f)//ÅÐ¶Ï°´¼üÊÇ·ñ°´ÏÂ
+	KEY_MATRIX_PORT=0x0f;//??????0,???1
+	if(KEY_MATRIX_PORT!=0x0f)//????????
 	{
-		delay_10us(1000);//Ïû¶¶
+		delay_10us(1000);//??
 		if(KEY_MATRIX_PORT!=0x0f)
 		{
-			//²âÊÔÁÐ
+			//???
 			KEY_MATRIX_PORT=0x0f;
-			switch(KEY_MATRIX_PORT)//±£´æÐÐÎª0£¬°´¼ü°´ÏÂºóµÄÁÐÖµ	
+			switch(KEY_MATRIX_PORT)//????0,????????	
 			{
 				case 0x07: key_value=1;break;
 				case 0x0b: key_value=2;break;
 				case 0x0d: key_value=3;break;
 				case 0x0e: key_value=4;break;
 			}
-			//²âÊÔÐÐ
+			//???
 			KEY_MATRIX_PORT=0xf0;
-			switch(KEY_MATRIX_PORT)//±£´æÁÐÎª0£¬°´¼ü°´ÏÂºóµÄ¼üÖµ	
+			switch(KEY_MATRIX_PORT)//????0,????????	
 			{
 				case 0x70: key_value=key_value;break;
 				case 0xb0: key_value=key_value+4;break;
 				case 0xd0: key_value=key_value+8;break;
 				case 0xe0: key_value=key_value+12;break;
 			}
-			while(KEY_MATRIX_PORT!=0xf0);//µÈ´ý°´¼üËÉ¿ª	
+			while(KEY_MATRIX_PORT!=0xf0);//??????	
 		}
 	}
 	else
@@ -342,21 +342,21 @@ u8 key_matrix_flip_scan(void)
 	return key_value;		
 }
 
-//²½½øµç»ú²Ù×÷º¯Êý
+//????????
 /*******************************************************************************
-* º¯ Êý Ãû       : step_motor_28BYJ48_send_pulse
-* º¯Êý¹¦ÄÜ		 : Êä³öÒ»¸öÊý¾Ý¸øULN2003´Ó¶øÊµÏÖÏò²½½øµç»ú·¢ËÍÒ»¸öÂö³å
-* Êä    Èë       : step£ºÖ¸¶¨²½½øÐòºÅ£¬¿ÉÑ¡Öµ0~7
-				   dir£º·½ÏòÑ¡Ôñ,1£ºË³Ê±Õë,0£ºÄæÊ±Õë
-* Êä    ³ö    	 : ÎÞ
+* ? ? ?       : step_motor_28BYJ48_send_pulse
+* ????		 : ???????ULN2003???????????????
+* ?    ?       : step:??????,???0~7
+				   dir:????,1:???,0:???
+* ?    ?    	 : ?
 *******************************************************************************/
 void step_motor_28BYJ48_send_pulse(u8 step,u8 dir)
 {
 	u8 temp=step;
 	
-	if(dir==0)	//Èç¹ûÎªÄæÊ±ÕëÐý×ª
-		temp=7-step;//µ÷»»½ÚÅÄÐÅºÅ
-	switch(temp)//8¸ö½ÚÅÄ¿ØÖÆ£ºA->AB->B->BC->C->CD->D->DA
+	if(dir==0)	//????????
+		temp=7-step;//??????
+	switch(temp)//8?????:A->AB->B->BC->C->CD->D->DA
 	{
 		case 0: STEPMOTOR1=1;STEPMOTOR2=0;STEPMOTOR3=0;STEPMOTOR4=0;break;
 		case 1: STEPMOTOR1=1;STEPMOTOR2=1;STEPMOTOR3=0;STEPMOTOR4=0;break;
@@ -366,17 +366,17 @@ void step_motor_28BYJ48_send_pulse(u8 step,u8 dir)
 		case 5: STEPMOTOR1=0;STEPMOTOR2=0;STEPMOTOR3=1;STEPMOTOR4=1;break;
 		case 6: STEPMOTOR1=0;STEPMOTOR2=0;STEPMOTOR3=0;STEPMOTOR4=1;break;
 		case 7: STEPMOTOR1=1;STEPMOTOR2=0;STEPMOTOR3=0;STEPMOTOR4=1;break;
-		default: STEPMOTOR1=0;STEPMOTOR2=0;STEPMOTOR3=0;STEPMOTOR4=0;break;//Í£Ö¹ÏàÐò	
+		default: STEPMOTOR1=0;STEPMOTOR2=0;STEPMOTOR3=0;STEPMOTOR4=0;break;//????	
 	}			
 }
 
-//²Ù×÷º¯Êý£¬1ÉÏµ½¶¥¶Ë£¬0ÏÂµ½µ×¶Ë//////////////////////////////////////////////////////////////////////////////////////////////////
+//????,1????,0????//////////////////////////////////////////////////////////////////////////////////////////////////
 void step_motor_control(u16 input){
     if(input!=StepMotor_status)
     {
         u8 key=0;
-	    u8 dir=0;//Ä¬ÈÏÄæÊ±Õë·½Ïò
-	    u8 speed=STEPMOTOR_MAXSPEED;//Ä¬ÈÏ×î´óËÙ¶ÈÐý×ª
+	    u8 dir=0;//???????
+	    u8 speed=STEPMOTOR_MAXSPEED;//????????
 	    u8 step=0;
         u16 time=0;
         u16 usetime=STEPMOTOR_SHIELD_HIGHT*STEPMOTOR_SHIELD_RANGE;
@@ -405,7 +405,7 @@ void step_motor_control(u16 input){
     }
 }
 
-//Ë®±Ã²Ù×÷º¯Êý£¬ÊäÈë¹©Ë®¶àÉÙºÁÃë//////////////////////////////////////////////////////////////////////////////////////////////////
+//??????,????????//////////////////////////////////////////////////////////////////////////////////////////////////
 void pump_control(u16 input)
 {
     PUMP=1;
@@ -413,64 +413,64 @@ void pump_control(u16 input)
     PUMP=0;
 }
 
-//Îí»¯Æ÷²Ù×÷º¯Êý£¬1¿ªÆô£¬0¹Ø±Õ//////////////////////////////////////////////////////////////////////////////////////////////////
+//???????,1??,0??//////////////////////////////////////////////////////////////////////////////////////////////////
 void spray_control(u16 input)
 {
     SPRAY=input;
 }
 
-//²¹¹âµÆ²Ù×÷º¯Êý£¬1¿ªÆô£¬0¹Ø±Õ//////////////////////////////////////////////////////////////////////////////////////////////////
+//???????,1??,0??//////////////////////////////////////////////////////////////////////////////////////////////////
 void light_control(u16 input)
 {
     LIGHT=input;
 }
 
-//ÎÂ¶È´«¸ÐÆ÷²Ù×÷º¯Êý
+//?????????
 /*******************************************************************************
-* º¯ Êý Ãû         : ds18b20_reset
-* º¯Êý¹¦ÄÜ		   : ¸´Î»DS18B20  
-* Êä    Èë         : ÎÞ
-* Êä    ³ö         : ÎÞ
+* ? ? ?         : ds18b20_reset
+* ????		   : ??DS18B20  
+* ?    ?         : ?
+* ?    ?         : ?
 *******************************************************************************/
 void ds18b20_reset(void)
 {
-	TEMPATURE=0;	//À­µÍDQ
-	delay_10us(75);	//À­µÍ750us
+	TEMPATURE=0;	//??DQ
+	delay_10us(75);	//??750us
 	TEMPATURE=1;	//DQ=1
 	delay_10us(2);	//20US
 }
 
 /*******************************************************************************
-* º¯ Êý Ãû         : ds18b20_check
-* º¯Êý¹¦ÄÜ		   : ¼ì²âDS18B20ÊÇ·ñ´æÔÚ
-* Êä    Èë         : ÎÞ
-* Êä    ³ö         : 1:Î´¼ì²âµ½DS18B20µÄ´æÔÚ£¬0:´æÔÚ
+* ? ? ?         : ds18b20_check
+* ????		   : ??DS18B20????
+* ?    ?         : ?
+* ?    ?         : 1:????DS18B20???,0:??
 *******************************************************************************/
 u8 ds18b20_check(void)
 {
 	u8 time_temp=0;
 
-	while(TEMPATURE&&time_temp<20)	//µÈ´ýDQÎªµÍµçÆ½
+	while(TEMPATURE&&time_temp<20)	//??DQ????
 	{
 		time_temp++;
 		delay_10us(1);	
 	}
-	if(time_temp>=20)return 1;	//Èç¹û³¬Ê±ÔòÇ¿ÖÆ·µ»Ø1
+	if(time_temp>=20)return 1;	//?????????1
 	else time_temp=0;
-	while((!TEMPATURE)&&time_temp<20)	//µÈ´ýDQÎª¸ßµçÆ½
+	while((!TEMPATURE)&&time_temp<20)	//??DQ????
 	{
 		time_temp++;
 		delay_10us(1);
 	}
-	if(time_temp>=20)return 1;	//Èç¹û³¬Ê±ÔòÇ¿ÖÆ·µ»Ø1
+	if(time_temp>=20)return 1;	//?????????1
 	return 0;
 }
 
 /*******************************************************************************
-* º¯ Êý Ãû         : ds18b20_read_bit
-* º¯Êý¹¦ÄÜ		   : ´ÓDS18B20¶ÁÈ¡Ò»¸öÎ»
-* Êä    Èë         : ÎÞ
-* Êä    ³ö         : 1/0
+* ? ? ?         : ds18b20_read_bit
+* ????		   : ?DS18B20?????
+* ?    ?         : ?
+* ?    ?         : 1/0
 *******************************************************************************/
 u8 ds18b20_read_bit(void)
 {
@@ -479,18 +479,18 @@ u8 ds18b20_read_bit(void)
 	TEMPATURE=0;
 	_nop_();_nop_();
 	TEMPATURE=1;	
-	_nop_();_nop_(); //¸Ã¶ÎÊ±¼ä²»ÄÜ¹ý³¤£¬±ØÐëÔÚ15usÄÚ¶ÁÈ¡Êý¾Ý
-	if(TEMPATURE)dat=1;	//Èç¹û×ÜÏßÉÏÎª1ÔòÊý¾ÝdatÎª1£¬·ñÔòÎª0
+	_nop_();_nop_(); //????????,???15us?????
+	if(TEMPATURE)dat=1;	//??????1???dat?1,???0
 	else dat=0;
 	delay_10us(5);
 	return dat;
 } 
 
 /*******************************************************************************
-* º¯ Êý Ãû         : ds18b20_read_byte
-* º¯Êý¹¦ÄÜ		   : ´ÓDS18B20¶ÁÈ¡Ò»¸ö×Ö½Ú
-* Êä    Èë         : ÎÞ
-* Êä    ³ö         : Ò»¸ö×Ö½ÚÊý¾Ý
+* ? ? ?         : ds18b20_read_byte
+* ????		   : ?DS18B20??????
+* ?    ?         : ?
+* ?    ?         : ??????
 *******************************************************************************/
 u8 ds18b20_read_byte(void)
 {
@@ -498,7 +498,7 @@ u8 ds18b20_read_byte(void)
 	u8 dat=0;
 	u8 temp=0;
 
-	for(i=0;i<8;i++)//Ñ­»·8´Î£¬Ã¿´Î¶ÁÈ¡Ò»Î»£¬ÇÒÏÈ¶ÁµÍÎ»ÔÙ¶Á¸ßÎ»
+	for(i=0;i<8;i++)//??8?,??????,?????????
 	{
 		temp=ds18b20_read_bit();
 		dat=(temp<<7)|(dat>>1);
@@ -507,20 +507,20 @@ u8 ds18b20_read_byte(void)
 }
 
 /*******************************************************************************
-* º¯ Êý Ãû         : ds18b20_write_byte
-* º¯Êý¹¦ÄÜ		   : Ð´Ò»¸ö×Ö½Úµ½DS18B20
-* Êä    Èë         : dat£ºÒªÐ´ÈëµÄ×Ö½Ú
-* Êä    ³ö         : ÎÞ
+* ? ? ?         : ds18b20_write_byte
+* ????		   : ??????DS18B20
+* ?    ?         : dat:??????
+* ?    ?         : ?
 *******************************************************************************/
 void ds18b20_write_byte(u8 dat)
 {
 	u8 i=0;
 	u8 temp=0;
 
-	for(i=0;i<8;i++)//Ñ­»·8´Î£¬Ã¿´ÎÐ´Ò»Î»£¬ÇÒÏÈÐ´µÍÎ»ÔÙÐ´¸ßÎ»
+	for(i=0;i<8;i++)//??8?,?????,?????????
 	{
-		temp=dat&0x01;//Ñ¡ÔñµÍÎ»×¼±¸Ð´Èë
-		dat>>=1;//½«´Î¸ßÎ»ÒÆµ½µÍÎ»
+		temp=dat&0x01;//????????
+		dat>>=1;//????????
 		if(temp)
 		{
 			TEMPATURE=0;
@@ -539,24 +539,24 @@ void ds18b20_write_byte(u8 dat)
 }
 
 /*******************************************************************************
-* º¯ Êý Ãû         : ds18b20_start
-* º¯Êý¹¦ÄÜ		   : ¿ªÊ¼ÎÂ¶È×ª»»
-* Êä    Èë         : ÎÞ
-* Êä    ³ö         : ÎÞ
+* ? ? ?         : ds18b20_start
+* ????		   : ??????
+* ?    ?         : ?
+* ?    ?         : ?
 *******************************************************************************/
 void ds18b20_start(void)
 {
-	ds18b20_reset();//¸´Î»
-	ds18b20_check();//¼ì²éDS18B20
+	ds18b20_reset();//??
+	ds18b20_check();//??DS18B20
 	ds18b20_write_byte(0xcc);//SKIP ROM
-    ds18b20_write_byte(0x44);//×ª»»ÃüÁî	
+    ds18b20_write_byte(0x44);//????	
 }
 
 /*******************************************************************************
-* º¯ Êý Ãû         : ds18b20_init
-* º¯Êý¹¦ÄÜ		   : ³õÊ¼»¯DS18B20µÄIO¿Ú DQ Í¬Ê±¼ì²âDSµÄ´æÔÚ
-* Êä    Èë         : ÎÞ
-* Êä    ³ö         : 1:²»´æÔÚ£¬0:´æÔÚ
+* ? ? ?         : ds18b20_init
+* ????		   : ???DS18B20?IO? DQ ????DS???
+* ?    ?         : ?
+* ?    ?         : 1:???,0:??
 *******************************************************************************//////////////////////////////////////////////////
 u8 ds18b20_init(void)
 {
@@ -565,10 +565,10 @@ u8 ds18b20_init(void)
 }
 
 /*******************************************************************************
-* º¯ Êý Ãû         : ds18b20_read_temperture
-* º¯Êý¹¦ÄÜ		   : ´Óds18b20µÃµ½ÎÂ¶ÈÖµ
-* Êä    Èë         : ÎÞ
-* Êä    ³ö         : ÎÂ¶ÈÊý¾Ý
+* ? ? ?         : ds18b20_read_temperture
+* ????		   : ?ds18b20?????
+* ?    ?         : ?
+* ?    ?         : ????
 *******************************************************************************//////////////////////////////////////////////////
 float temperature_read(void)
 {
@@ -577,54 +577,54 @@ float temperature_read(void)
 	u8 datl=0;
 	u16 value=0;
 
-	ds18b20_start();//¿ªÊ¼×ª»»
-	ds18b20_reset();//¸´Î»
+	ds18b20_start();//????
+	ds18b20_reset();//??
 	ds18b20_check();
 	ds18b20_write_byte(0xcc);//SKIP ROM
-    ds18b20_write_byte(0xbe);//¶Á´æ´¢Æ÷
+    ds18b20_write_byte(0xbe);//????
 
-	datl=ds18b20_read_byte();//µÍ×Ö½Ú
-	dath=ds18b20_read_byte();//¸ß×Ö½Ú
-	value=(dath<<8)+datl;//ºÏ²¢Îª16Î»Êý¾Ý
+	datl=ds18b20_read_byte();//???
+	dath=ds18b20_read_byte();//???
+	value=(dath<<8)+datl;//???16???
 
-	if((value&0xf800)==0xf800)//ÅÐ¶Ï·ûºÅÎ»£¬¸ºÎÂ¶È
+	if((value&0xf800)==0xf800)//?????,???
 	{
-		value=(~value)+1; //Êý¾ÝÈ¡·´ÔÙ¼Ó1
-		temp=value*(-0.0625);//³ËÒÔ¾«¶È	
+		value=(~value)+1; //??????1
+		temp=value*(-0.0625);//????	
 	}
-	else //ÕýÎÂ¶È
+	else //???
 	{
 		temp=value*0.0625;	
 	}
 	return temp;
 }
 
-//¿ÕÆøÊª¶È´«¸ÐÆ÷²Ù×÷º¯Êý
-//¸´Î»DHT11
+//???????????
+//??DHT11
 void DHT11_Rst(void)	   
 {                 
 	MOISTURE_AIR=1;
 	delay_10us(1);
-	MOISTURE_AIR=0; 	//À­µÍDQ
-    delay_ms(25);   //À­µÍÖÁÉÙ18ms
+	MOISTURE_AIR=0; 	//??DQ
+    delay_ms(25);   //????18ms
     MOISTURE_AIR=1; 	//DQ=1 
-	delay_10us(3);  //Ö÷»úÀ­¸ß20~40us
+	delay_10us(3);  //????20~40us
 }
-//µÈ´ýDHT11µÄ»ØÓ¦
-//·µ»Ø1:Î´¼ì²âµ½DHT11µÄ´æÔÚ
-//·µ»Ø0:´æÔÚ
+//??DHT11???
+//??1:????DHT11???
+//??0:??
 u8 DHT11_Check(void) 	   
 {   
 	u8 retry=0;
 	
-	while (!MOISTURE_AIR&&retry<100)//ÅÐ¶Ï´Ó»ú·¢³ö 80us µÄµÍµçÆ½ÏìÓ¦ÐÅºÅÊÇ·ñ½áÊø
+	while (!MOISTURE_AIR&&retry<100)//?????? 80us ????????????
 	{
 		retry++;
 		_nop_();
 	};
 	if(retry>=100)return 1;
 	else retry=0;
-    while (MOISTURE_AIR&&retry<100)//ÅÐ¶Ï´Ó»ú·¢³ö 80us µÄ¸ßµçÆ½ÊÇ·ñ½áÊø?£Èç½áÊ?ÔòÖ÷»ú½øÈëÊý¾Ý½ÓÊÕ×´Ì¬
+    while (MOISTURE_AIR&&retry<100)//?????? 80us ?????????H??????????????
 	{
 		retry++;
 		_nop_();
@@ -634,8 +634,8 @@ u8 DHT11_Check(void)
 }
 
 
-//DHT11³õÊ¼»¯ //////////////////////////////////////////////////////////////////////////////////////////////////
-//·µ»Ø0£º³õÊ¼»¯³É¹¦£¬1£ºÊ§°Ü
+//DHT11??? //////////////////////////////////////////////////////////////////////////////////////////////////
+//??0:?????,1:??
 u8 DHT11_Init(void)
 {
 	MOISTURE_AIR=1;
@@ -643,44 +643,44 @@ u8 DHT11_Init(void)
 	return DHT11_Check();	
 }
 
-//´ÓDHT11¶ÁÈ¡Ò»¸ö×Ö½Ú
-//·µ»ØÖµ£º¶Áµ½µÄÊý¾Ý
+//?DHT11??????
+//???:?????
 u8 DHT11_Read_Byte(void)    
 {        
     u8 i,temp;
 	u8 data_byte=0; 
 	u8 retry=0;
 
-  	for(i=0;i<8;i++)//½ÓÊÕ8bitµÄÊý¾Ý 
+  	for(i=0;i<8;i++)//??8bit??? 
   	{ 
-//		while(!MOISTURE_AIR);//µÈ´ý50usµÄµÍµçÆ½¿ªÊ¼ÐÅºÅ½áÊø
-		while (!MOISTURE_AIR&&retry<50)//µÈ´ý50usµÄµÍµçÆ½¿ªÊ¼ÐÅºÅ½áÊø
+//		while(!MOISTURE_AIR);//??50us??????????
+		while (!MOISTURE_AIR&&retry<50)//??50us??????????
 		{
 			retry++;
 			_nop_();
 		};
 		retry=0; 
-		delay_10us(3);//µÈ´ý40us 
-		temp=0;//Ê±¼äÎª26us-28us?£±íÊ¾½ÓÊÕµÄÎ?Êý¾Ý'0' 
+		delay_10us(3);//??40us 
+		temp=0;//???26us-28us?1????????'0' 
 		if(MOISTURE_AIR==1) 
-			temp=1; //Èç¹û26us-28usÖ®ºó?£»¹Î?¸ßµçÆ½?£Ôò±íÊ¾½ÓÊÕµÄÊ?¾ÝÎª'1' 
-//		while(MOISTURE_AIR);//µÈ´ýÊý¾ÝÐÅºÅ¸ßµçÆ½??'0'Îª26us-28us??'1'Îª70us
-		while (MOISTURE_AIR&&retry<100)//µÈ´ýÊý¾ÝÐÅºÅ¸ßµçÆ½??'0'Îª26us-28us??'1'Îª70us
+			temp=1; //??26us-28us???;??????T?????????'1' 
+//		while(MOISTURE_AIR);//???????????'0'?26us-28us??'1'?70us
+		while (MOISTURE_AIR&&retry<100)//???????????'0'?26us-28us??'1'?70us
 		{
 			retry++;
 			_nop_();
 		};
-		data_byte<<=1;//½ÓÊÕµÄÊý¾ÝÎª¸ßÎ»ÔÚÇ°?¡ÓÒÒÆª? 
+		data_byte<<=1;//??????????????? 
 		data_byte|=temp; 
   	} 
 
   	return data_byte;
 }
 
-//´ÓDHT11¶ÁÈ¡Ò»´ÎÊý¾Ý//////////////////////////////////////////////////////////////////////////////////////////////////
-//temp:ÎÂ¶ÈÖµ(·¶Î§:0~50¡ã)
-//humi:Êª¶ÈÖµ(·¶Î§:20%~90%)
-//·µ»ØÖµ£º0,Õý³£;1,¶ÁÈ¡Ê§°Ü
+//?DHT11??????//////////////////////////////////////////////////////////////////////////////////////////////////
+//temp:???(??:0~50°)
+//humi:???(??:20%~90%)
+//???:0,??;1,????
 u8 air_moisture_read(u8 *temp,u8 *humi)    
 {        
  	u8 buf[5];
@@ -688,7 +688,7 @@ u8 air_moisture_read(u8 *temp,u8 *humi)
 	DHT11_Rst();
 	if(DHT11_Check()==0)
 	{
-		for(i=0;i<5;i++)//¶ÁÈ¡40Î»Êý¾Ý
+		for(i=0;i<5;i++)//??40???
 		{
 			buf[i]=DHT11_Read_Byte();
 		}
@@ -749,12 +749,12 @@ u8 air_moisture_read(u8 *temp,u8 *humi)
 
 u8 keytmp=0;
 u8 key=0;
-//ÎÂ¶È´«¸ÐÆ÷
+//?????
 u16 stay_time;
 int temp_value;
 u8 tempbuf[8];
 
-//¿ÕÆøÊª¶È´«¸ÐÆ÷
+//???????
 u8 temp=0;
 u8 humi=0;
 u8 i=0;
@@ -762,7 +762,7 @@ u8 temp_buf2[3],humi_buf[3];
 u8 gsmg_code[17]={0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,
 				0x7f,0x6f,0x77,0x7c,0x39,0x5e,0x79,0x71};
 
-//¹âÇ¿´«¸ÐÆ÷
+//?????
 u16 adc_light_value=0;
 u8 adc_light_buf[4];
 				
@@ -781,12 +781,11 @@ void main()
 	spray_control(0);
 	light_control(0);
 	pump_control(500);
-	lcd1602_init();
 	lcd1602_show_string(0,0,"Self-test");
 	lcd1602_show_string(0,1,"Success!!!");
 	while(1)
 	{
-				
+		key=key_matrix_flip_scan();		
 		stay_time++;
 		 if(stay_time==22000){
 			 
@@ -809,13 +808,13 @@ void main()
 			tempbuf[6]='C';
 			tempbuf[7]='\0';	
 					
-			adc_light_value=xpt2046_read_adc_value(0xA4);//¹âÃôµç×è
+			adc_light_value=xpt2046_read_adc_value(0xA4);//????
 			adc_light_buf[0]=adc_light_value%1000/100+0x30;
 			adc_light_buf[1]=adc_light_value%1000%100/10+0x30;
 			adc_light_buf[2]=adc_light_value%1000%100%10+0x30;
 			adc_light_buf[3]='\0';
 				
-			adc_water_level_value=xpt2046_read_adc_value(0xE4);//Ë®Î»´«¸ÐÆ÷
+			adc_water_level_value=xpt2046_read_adc_value(0xE4);//?????
 			adc_water_level_buf[0]=adc_water_level_value%1000/100+0x30;
 			adc_water_level_buf[1]=adc_water_level_value%1000%100/10+0x30;
 			adc_water_level_buf[2]=adc_water_level_value%1000%100%10+0x30;
@@ -841,37 +840,36 @@ void main()
 		// { }
 		// else
 		// 	key=keytmp;
-		key=key_matrix_flip_scan();
 		switch(key)
 		{
 			case(1):{
 				lcd1602_init();
-				lcd1602_show_string(0,0,"Temperature:");//µÚÒ»ÐÐÏÔÊ¾
-				lcd1602_show_string(0,1,tempbuf);//µÚ¶þÐÐÏÔÊ¾
+				lcd1602_show_string(0,0,"Temperature:");//?????
+				lcd1602_show_string(0,1,tempbuf);//?????
 				break;	
 			}
 			case(2):{
 				lcd1602_init();
-				lcd1602_show_string(0,0,"Soil Moisture:");//µÚÒ»ÐÐÏÔÊ¾
-				lcd1602_show_string(0,1,"N/A");//µÚ¶þÐÐÏÔÊ¾
+				lcd1602_show_string(0,0,"Soil Moisture:");//?????
+				lcd1602_show_string(0,1,"N/A");//?????
 				break;	
 			}
 			case(3):{
 				lcd1602_init();
-				lcd1602_show_string(0,0,"Water Level:");//µÚÒ»ÐÐÏÔÊ¾
-				lcd1602_show_string(0,1,adc_water_level_buf);//µÚ¶þÐÐÏÔÊ¾
+				lcd1602_show_string(0,0,"Water Level:");//?????
+				lcd1602_show_string(0,1,adc_water_level_buf);//?????
 				break;	
 			}
 			case(4):{
 				lcd1602_init();
-				lcd1602_show_string(0,0,"Air Moisture:");//µÚÒ»ÐÐÏÔÊ¾
-				lcd1602_show_string(0,1,humi_buf);//µÚ¶þÐÐÏÔÊ¾
+				lcd1602_show_string(0,0,"Air Moisture:");//?????
+				lcd1602_show_string(0,1,humi_buf);//?????
 				break;	
 			}
 			case(5):{
 				lcd1602_init();
-				lcd1602_show_string(0,0,"Light Intensity:");//µÚÒ»ÐÐÏÔÊ¾
-				lcd1602_show_string(0,1,adc_light_buf);//µÚ¶þÐÐÏÔÊ¾
+				lcd1602_show_string(0,0,"Light Intensity:");//?????
+				lcd1602_show_string(0,1,adc_light_buf);//?????
 				break;	
 			}
 			case(6):{
@@ -930,7 +928,6 @@ void main()
 				spray_control(0);
 				light_control(0);
 				pump_control(500);
-				lcd1602_init();
 				lcd1602_show_string(0,0,"Self-test");
 				lcd1602_show_string(0,1,"Success!!!");
 				break;	
