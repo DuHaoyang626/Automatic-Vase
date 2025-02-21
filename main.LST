@@ -1,0 +1,1018 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              02/21/2025 18:08:40 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Program Files\keil_v5\C51_961\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND
+                    - TABS(2)
+
+line level    source
+
+   1          #include"reg52.h"
+   2          #include "intrins.h"
+   3          
+   4          
+   5          //类型定义
+   6          typedef unsigned int u16;
+   7          typedef unsigned char u8;
+   8          
+   9          
+  10          //接口定义
+  11          
+  12          #define LCD1602_DATAPORT P0//LCD数据端口
+  13          sbit DIN  = P0^4;   //ADC输入
+  14          sbit CS   = P0^5;   //ADC片选
+  15          sbit CLK  = P0^6;   //ADC时钟
+  16          sbit DOUT = P0^7;   //ADC输出
+  17          #define KEY_MATRIX_PORT P1//开发板矩阵键盘
+  18          
+  19          sbit PUMP=P2^0;//水泵接入P2^0
+  20          sbit SPRAY=P2^1;//雾化器接入2^1
+  21          sbit LIGHT=P2^2;//LED补光灯接入P2^2
+  22          sbit MOISTURE_AIR=P2^3;//空气湿度传感器接入P2^3
+  23          sbit TEMPATURE=P2^4;//温度传感器接入P2^4
+  24          sbit LCD1602_RW=P2^5;//LCD读写选择
+  25          sbit LCD1602_RS=P2^6;//LCD数据命令选择
+  26          sbit LCD1602_E=P2^7; //LCD使能信号
+  27          
+  28          sbit STEPMOTOR1=P3^0;//步进电机1接入P3^0，待驱动板
+  29          sbit STEPMOTOR2=P3^1;//步进电机2接入P3^1，待驱动板
+  30          sbit STEPMOTOR3=P3^2;//步进电机3接入P3^2，待驱动板
+  31          sbit STEPMOTOR4=P3^3;//步进电机4接入P3^3，待驱动板
+  32          
+  33          // 
+  34          // sbit MOISTURE_SOIL=P3^1;//土壤湿度传感器接入ADC
+  35          // sbit WATER_LEVEL=P3^2;//水位传感器接入ADC^E4
+  36          //sbit LIGHT_INTENSITY=P2^4;//光照强度传感器接入ADC^A4
+  37          //sbit WIFI_IO=P2^0;//预留WIFI接口为？？？
+  38          
+  39          //全局数据
+  40          
+  41          //LCD1602数据口4位和8位定义，若为1，则为LCD1602四位数据口驱动，反之为8位
+  42          #define LCD1602_4OR8_DATA_INTERFACE 1 //默认使用8位数据口LCD1602
+  43          
+  44          // 定义步进电机速度，值越小，速度越快
+  45          #define STEPMOTOR_MAXSPEED        100//步进电机最大速度，不能小于1
+  46          #define STEPMOTOR_MINSPEED        350//步进电机最小速度
+  47          #define STEPMOTOR_SHIELD_HIGHT    10//遮光板高度
+  48          #define STEPMOTOR_SHIELD_RANGE    300//遮光板移动时间比例
+  49          u16 StepMotor_status=0;//步进电机遮光板状态变量，0为最低位置，1为最高位置
+  50          
+  51          //公共函数
+  52          
+  53          //延时函数，输入int x，延时x/100毫秒
+  54          void delay_10us(u16 ten_us){
+C51 COMPILER V9.60.7.0   MAIN                                                              02/21/2025 18:08:40 PAGE 2   
+
+  55   1      while(ten_us--);
+  56   1      }
+  57          
+  58          //延时函数，输入int x，延时x毫秒
+  59          void delay_ms(u16 ms)
+  60          {
+  61   1        u16 i,j;
+  62   1        for(i=ms;i>0;i--)
+  63   1          for(j=110;j>0;j--);
+  64   1      }
+  65          
+  66          //数模转换函数部分
+  67          /*******************************************************************************
+  68          * 函 数 名       : xpt2046_wirte_data
+  69          * 函数功能     : XPT2046写数据
+  70          * 输    入       : dat：写入的数据
+  71          * 输    出       : 无
+  72          *******************************************************************************/
+  73          void xpt2046_wirte_data(u8 dat)
+  74          {
+  75   1        u8 i;
+  76   1      
+  77   1        CLK = 0;
+  78   1        _nop_();
+  79   1        for(i=0;i<8;i++)//循环8次，每次传输一位，共一个字节
+  80   1        {
+  81   2          DIN = dat >> 7;//先传高位再传低位
+  82   2          dat <<= 1;//将低位移到高位
+  83   2          CLK = 0;//CLK由低到高产生一个上升沿，从而写入数据
+  84   2          _nop_();  
+  85   2          CLK = 1;
+  86   2          _nop_();
+  87   2        }
+  88   1      }
+  89          
+  90          /*******************************************************************************
+  91          * 函 数 名       : xpt2046_read_data
+  92          * 函数功能     : XPT2046读数据
+  93          * 输    入       : 无
+  94          * 输    出       : XPT2046返回12位数据
+  95          *******************************************************************************/
+  96          u16 xpt2046_read_data(void)
+  97          {
+  98   1        u8 i;
+  99   1        u16 dat=0;
+ 100   1      
+ 101   1        CLK = 0;
+ 102   1        _nop_();
+ 103   1        for(i=0;i<12;i++)//循环12次，每次读取一位，大于一个字节数，所以返回值类型是u16
+ 104   1        {
+ 105   2          dat <<= 1;
+ 106   2          CLK = 1;
+ 107   2          _nop_();
+ 108   2          CLK = 0; //CLK由高到低产生一个下降沿，从而读取数据
+ 109   2          _nop_();
+ 110   2          dat |= DOUT;//先读取高位，再读取低位。  
+ 111   2        }
+ 112   1        return dat; 
+ 113   1      }
+ 114          
+ 115          /*******************************************************************************
+ 116          * 函 数 名       : xpt2046_read_adc_value
+C51 COMPILER V9.60.7.0   MAIN                                                              02/21/2025 18:08:40 PAGE 3   
+
+ 117          * 函数功能     : XPT2046读AD数据
+ 118          * 输    入       : cmd：指令
+ 119          * 输    出       : XPT2046返回AD值
+ 120          *******************************************************************************///////////////////////////
+             -///////////////////////
+ 121          u16 xpt2046_read_adc_value(u8 cmd)
+ 122          {
+ 123   1        u8 i;
+ 124   1        u16 adc_value=0;
+ 125   1      
+ 126   1        CLK = 0;//先拉低时钟
+ 127   1        CS  = 0;//使能XPT2046
+ 128   1        xpt2046_wirte_data(cmd);//发送命令字
+ 129   1        for(i=6; i>0; i--);//延时等待转换结果
+ 130   1        CLK = 1;
+ 131   1        _nop_();
+ 132   1        CLK = 0;//发送一个时钟，清除BUSY
+ 133   1        _nop_();
+ 134   1        adc_value=xpt2046_read_data();
+ 135   1        CS = 1;//关闭XPT2046
+ 136   1        return adc_value;
+ 137   1      }
+ 138          
+ 139          //LCD函数定义
+ 140          /*******************************************************************************
+ 141          * 函 数 名       : lcd1602_write_cmd
+ 142          * 函数功能     : LCD1602写命令
+ 143          * 输    入       : cmd：指令
+ 144          * 输    出       : 无
+ 145          *******************************************************************************/
+ 146          #if (LCD1602_4OR8_DATA_INTERFACE==0)//8位LCD
+              void lcd1602_write_cmd(u8 cmd)
+              {
+                LCD1602_RS=0;//选择命令
+                LCD1602_RW=0;//选择写
+                LCD1602_E=0;
+                LCD1602_DATAPORT=cmd;//准备命令
+                delay_ms(1);
+                LCD1602_E=1;//使能脚E先上升沿写入
+                delay_ms(1);
+                LCD1602_E=0;//使能脚E后负跳变完成写入 
+              }
+              #else //4位LCD
+ 159          void lcd1602_write_cmd(u8 cmd)
+ 160          {
+ 161   1        LCD1602_RS=0;//选择命令
+ 162   1        LCD1602_RW=0;//选择写
+ 163   1        LCD1602_E=0;
+ 164   1        LCD1602_DATAPORT=cmd;//准备命令
+ 165   1        delay_ms(1);
+ 166   1        LCD1602_E=1;//使能脚E先上升沿写入
+ 167   1        delay_ms(1);
+ 168   1        LCD1602_E=0;//使能脚E后负跳变完成写入
+ 169   1        
+ 170   1        LCD1602_DATAPORT=cmd<<4;//准备命令
+ 171   1        delay_ms(1);
+ 172   1        LCD1602_E=1;//使能脚E先上升沿写入
+ 173   1        delay_ms(1);
+ 174   1        LCD1602_E=0;//使能脚E后负跳变完成写入 
+ 175   1      }
+ 176          #endif
+ 177          
+C51 COMPILER V9.60.7.0   MAIN                                                              02/21/2025 18:08:40 PAGE 4   
+
+ 178          /*******************************************************************************
+ 179          * 函 数 名       : lcd1602_write_data
+ 180          * 函数功能     : LCD1602写数据
+ 181          * 输    入       : dat：数据
+ 182          * 输    出       : 无
+ 183          *******************************************************************************/
+ 184          #if (LCD1602_4OR8_DATA_INTERFACE==0)//8位LCD
+              void lcd1602_write_data(u8 dat) 
+              {
+                LCD1602_RS=1;//选择数据
+                LCD1602_RW=0;//选择写
+                LCD1602_E=0;
+                LCD1602_DATAPORT=dat;//准备数据
+                delay_ms(1);
+                LCD1602_E=1;//使能脚E先上升沿写入
+                delay_ms(1);
+                LCD1602_E=0;//使能脚E后负跳变完成写入   
+              }
+              #else
+ 197          void lcd1602_write_data(u8 dat) 
+ 198          {
+ 199   1        LCD1602_RS=1;//选择数据
+ 200   1        LCD1602_RW=0;//选择写
+ 201   1        LCD1602_E=0;
+ 202   1        LCD1602_DATAPORT=dat;//准备数据
+ 203   1        delay_ms(1);
+ 204   1        LCD1602_E=1;//使能脚E先上升沿写入
+ 205   1        delay_ms(1);
+ 206   1        LCD1602_E=0;//使能脚E后负跳变完成写入
+ 207   1        
+ 208   1        LCD1602_DATAPORT=dat<<4;//准备数据
+ 209   1        delay_ms(1);
+ 210   1        LCD1602_E=1;//使能脚E先上升沿写入
+ 211   1        delay_ms(1);
+ 212   1        LCD1602_E=0;//使能脚E后负跳变完成写入   
+ 213   1      }
+ 214          #endif
+ 215          
+ 216          /*******************************************************************************
+ 217          * 函 数 名       : lcd1602_init
+ 218          * 函数功能     : LCD1602初始化
+ 219          * 输    入       : 无
+ 220          * 输    出       : 无
+ 221          *******************************************************************************///////////////////////////
+             -///////////////////////
+ 222          #if (LCD1602_4OR8_DATA_INTERFACE==0)//8位LCD
+              void lcd1602_init(void)
+              {
+                lcd1602_write_cmd(0x38);//数据总线8位，显示2行，5*7点阵/字符
+                lcd1602_write_cmd(0x0c);//显示功能开，无光标，光标闪烁
+                lcd1602_write_cmd(0x06);//写入新数据后光标右移，显示屏不移动
+                lcd1602_write_cmd(0x01);//清屏  
+              }
+              #else
+ 231          void lcd1602_init(void)
+ 232          {
+ 233   1        lcd1602_write_cmd(0x28);//数据总线4位，显示2行，5*7点阵/字符
+ 234   1        lcd1602_write_cmd(0x0c);//显示功能开，无光标，光标闪烁
+ 235   1        lcd1602_write_cmd(0x06);//写入新数据后光标右移，显示屏不移动
+ 236   1        lcd1602_write_cmd(0x01);//清屏  
+ 237   1      }
+ 238          #endif
+C51 COMPILER V9.60.7.0   MAIN                                                              02/21/2025 18:08:40 PAGE 5   
+
+ 239          
+ 240          /*******************************************************************************
+ 241          * 函 数 名       : lcd1602_clear
+ 242          * 函数功能     : LCD1602清屏
+ 243          * 输    入       : 无
+ 244          * 输    出       : 无
+ 245          *******************************************************************************/
+ 246          void lcd1602_clear(void)
+ 247          {
+ 248   1        lcd1602_write_cmd(0x01);  
+ 249   1      }
+ 250          
+ 251          /*******************************************************************************
+ 252          * 函 数 名       : lcd1602_show_string
+ 253          * 函数功能     : LCD1602显示字符
+ 254          * 输    入       : x,y：显示坐标，x=0~15，y=0~1;
+ 255                     str：显示字符串
+ 256          * 输    出       : 无
+ 257          *******************************************************************************///////////////////////////
+             -///////////////////////
+ 258          void lcd1602_show_string(u8 x,u8 y,u8 *str)
+ 259          {
+ 260   1        u8 i=0;
+ 261   1      
+ 262   1        if(y>1||x>15)return;//行列参数不对则强制退出
+ 263   1      
+ 264   1        if(y<1) //第1行显示
+ 265   1        { 
+ 266   2          while(*str!='\0')//字符串是以'\0'结尾，只要前面有内容就显示
+ 267   2          {
+ 268   3            if(i<16-x)//如果字符长度超过第一行显示范围，则在第二行继续显示
+ 269   3            {
+ 270   4              lcd1602_write_cmd(0x80+i+x);//第一行显示地址设置  
+ 271   4            }
+ 272   3            else
+ 273   3            {
+ 274   4              lcd1602_write_cmd(0x40+0x80+i+x-16);//第二行显示地址设置  
+ 275   4            }
+ 276   3            lcd1602_write_data(*str);//显示内容
+ 277   3            str++;//指针递增
+ 278   3            i++;  
+ 279   3          } 
+ 280   2        }
+ 281   1        else  //第2行显示
+ 282   1        {
+ 283   2          while(*str!='\0')
+ 284   2          {
+ 285   3            if(i<16-x) //如果字符长度超过第二行显示范围，则在第一行继续显示
+ 286   3            {
+ 287   4              lcd1602_write_cmd(0x80+0x40+i+x); 
+ 288   4            }
+ 289   3            else
+ 290   3            {
+ 291   4              lcd1602_write_cmd(0x80+i+x-16); 
+ 292   4            }
+ 293   3            lcd1602_write_data(*str);
+ 294   3            str++;
+ 295   3            i++;  
+ 296   3          } 
+ 297   2        }       
+ 298   1      }
+ 299          
+C51 COMPILER V9.60.7.0   MAIN                                                              02/21/2025 18:08:40 PAGE 6   
+
+ 300          //矩阵键盘函数
+ 301          /*******************************************************************************
+ 302          * 函 数 名       : key_matrix_flip_scan
+ 303          * 函数功能     : 使用线翻转扫描方法，检测矩阵按键是否按下，按下则返回对应键值
+ 304          * 输    入       : 无
+ 305          * 输    出       : key_value：1-16，对应S1-S16键，
+ 306                     0：按键未按下
+ 307          *******************************************************************************///////////////////////////
+             -///////////////////////
+ 308          u8 key_matrix_flip_scan(void)
+ 309          {
+ 310   1        static u8 key_value=0;
+ 311   1      
+ 312   1        KEY_MATRIX_PORT=0x0f;//给所有行赋值0，列全为1
+ 313   1        if(KEY_MATRIX_PORT!=0x0f)//判断按键是否按下
+ 314   1        {
+ 315   2          delay_10us(1000);//消抖
+ 316   2          if(KEY_MATRIX_PORT!=0x0f)
+ 317   2          {
+ 318   3            //测试列
+ 319   3            KEY_MATRIX_PORT=0x0f;
+ 320   3            switch(KEY_MATRIX_PORT)//保存行为0，按键按下后的列值  
+ 321   3            {
+ 322   4              case 0x07: key_value=1;break;
+ 323   4              case 0x0b: key_value=2;break;
+ 324   4              case 0x0d: key_value=3;break;
+ 325   4              case 0x0e: key_value=4;break;
+ 326   4            }
+ 327   3            //测试行
+ 328   3            KEY_MATRIX_PORT=0xf0;
+ 329   3            switch(KEY_MATRIX_PORT)//保存列为0，按键按下后的键值  
+ 330   3            {
+ 331   4              case 0x70: key_value=key_value;break;
+ 332   4              case 0xb0: key_value=key_value+4;break;
+ 333   4              case 0xd0: key_value=key_value+8;break;
+ 334   4              case 0xe0: key_value=key_value+12;break;
+ 335   4            }
+ 336   3            while(KEY_MATRIX_PORT!=0xf0);//等待按键松开 
+ 337   3          }
+ 338   2        }
+ 339   1        else
+ 340   1          key_value=0;    
+ 341   1        
+ 342   1        return key_value;   
+ 343   1      }
+ 344          
+ 345          //步进电机操作函数
+ 346          /*******************************************************************************
+ 347          * 函 数 名       : step_motor_28BYJ48_send_pulse
+ 348          * 函数功能     : 输出一个数据给ULN2003从而实现向步进电机发送一个脉冲
+ 349          * 输    入       : step：指定步进序号，可选值0~7
+ 350                     dir：方向选择,1：顺时针,0：逆时针
+ 351          * 输    出       : 无
+ 352          *******************************************************************************/
+ 353          void step_motor_28BYJ48_send_pulse(u8 step,u8 dir)
+ 354          {
+ 355   1        u8 temp=step;
+ 356   1        
+ 357   1        if(dir==0)  //如果为逆时针旋转
+ 358   1          temp=7-step;//调换节拍信号
+ 359   1        switch(temp)//8个节拍控制：A->AB->B->BC->C->CD->D->DA
+ 360   1        {
+C51 COMPILER V9.60.7.0   MAIN                                                              02/21/2025 18:08:40 PAGE 7   
+
+ 361   2          case 0: STEPMOTOR1=1;STEPMOTOR2=0;STEPMOTOR3=0;STEPMOTOR4=0;break;
+ 362   2          case 1: STEPMOTOR1=1;STEPMOTOR2=1;STEPMOTOR3=0;STEPMOTOR4=0;break;
+ 363   2          case 2: STEPMOTOR1=0;STEPMOTOR2=1;STEPMOTOR3=0;STEPMOTOR4=0;break;
+ 364   2          case 3: STEPMOTOR1=0;STEPMOTOR2=1;STEPMOTOR3=1;STEPMOTOR4=0;break;
+ 365   2          case 4: STEPMOTOR1=0;STEPMOTOR2=0;STEPMOTOR3=1;STEPMOTOR4=0;break;
+ 366   2          case 5: STEPMOTOR1=0;STEPMOTOR2=0;STEPMOTOR3=1;STEPMOTOR4=1;break;
+ 367   2          case 6: STEPMOTOR1=0;STEPMOTOR2=0;STEPMOTOR3=0;STEPMOTOR4=1;break;
+ 368   2          case 7: STEPMOTOR1=1;STEPMOTOR2=0;STEPMOTOR3=0;STEPMOTOR4=1;break;
+ 369   2          default: STEPMOTOR1=0;STEPMOTOR2=0;STEPMOTOR3=0;STEPMOTOR4=0;break;//停止相序 
+ 370   2        }     
+ 371   1      }
+ 372          
+ 373          //操作函数，1上到顶端，0下到底端//////////////////////////////////////////////////////////////////////////
+             -////////////////////////
+ 374          void step_motor_control(u16 input){
+ 375   1          if(input!=StepMotor_status)
+ 376   1          {
+ 377   2              u8 key=0;
+ 378   2            u8 dir=0;//默认逆时针方向
+ 379   2            u8 speed=STEPMOTOR_MAXSPEED;//默认最大速度旋转
+ 380   2            u8 step=0;
+ 381   2              u16 time=0;
+ 382   2              u16 usetime=STEPMOTOR_SHIELD_HIGHT*STEPMOTOR_SHIELD_RANGE;
+ 383   2      
+ 384   2              if(input==1)
+ 385   2              {
+ 386   3                  while(time<=usetime){
+ 387   4                      step_motor_28BYJ48_send_pulse(step++,dir);
+ 388   4                      time++;
+ 389   4                      if(step==8)step=0;    
+ 390   4                      delay_10us(speed);
+ 391   4                  }
+ 392   3            StepMotor_status=1;
+ 393   3              }
+ 394   2              if(input==0)
+ 395   2              {
+ 396   3                  dir=!dir;
+ 397   3                  while(time<=usetime){
+ 398   4                      step_motor_28BYJ48_send_pulse(step++,dir);
+ 399   4                      time++;
+ 400   4                      if(step==8)step=0;    
+ 401   4                      delay_10us(speed);
+ 402   4                  }
+ 403   3            StepMotor_status=0;
+ 404   3              }
+ 405   2          }
+ 406   1      }
+ 407          
+ 408          //水泵操作函数，输入供水多少毫秒//////////////////////////////////////////////////////////////////////////
+             -////////////////////////
+ 409          void pump_control(u16 input)
+ 410          {
+ 411   1          PUMP=1;
+ 412   1          delay_ms(input);
+ 413   1          PUMP=0;
+ 414   1      }
+ 415          
+ 416          //雾化器操作函数，1开启，0关闭////////////////////////////////////////////////////////////////////////////
+             -//////////////////////
+ 417          void spray_control(u16 input)
+ 418          {
+ 419   1          SPRAY=input;
+C51 COMPILER V9.60.7.0   MAIN                                                              02/21/2025 18:08:40 PAGE 8   
+
+ 420   1      }
+ 421          
+ 422          //补光灯操作函数，1开启，0关闭////////////////////////////////////////////////////////////////////////////
+             -//////////////////////
+ 423          void light_control(u16 input)
+ 424          {
+ 425   1          LIGHT=input;
+ 426   1      }
+ 427          
+ 428          //温度传感器操作函数
+ 429          /*******************************************************************************
+ 430          * 函 数 名         : ds18b20_reset
+ 431          * 函数功能       : 复位DS18B20  
+ 432          * 输    入         : 无
+ 433          * 输    出         : 无
+ 434          *******************************************************************************/
+ 435          void ds18b20_reset(void)
+ 436          {
+ 437   1        TEMPATURE=0;  //拉低DQ
+ 438   1        delay_10us(75); //拉低750us
+ 439   1        TEMPATURE=1;  //DQ=1
+ 440   1        delay_10us(2);  //20US
+ 441   1      }
+ 442          
+ 443          /*******************************************************************************
+ 444          * 函 数 名         : ds18b20_check
+ 445          * 函数功能       : 检测DS18B20是否存在
+ 446          * 输    入         : 无
+ 447          * 输    出         : 1:未检测到DS18B20的存在，0:存在
+ 448          *******************************************************************************/
+ 449          u8 ds18b20_check(void)
+ 450          {
+ 451   1        u8 time_temp=0;
+ 452   1      
+ 453   1        while(TEMPATURE&&time_temp<20)  //等待DQ为低电平
+ 454   1        {
+ 455   2          time_temp++;
+ 456   2          delay_10us(1);  
+ 457   2        }
+ 458   1        if(time_temp>=20)return 1;  //如果超时则强制返回1
+ 459   1        else time_temp=0;
+ 460   1        while((!TEMPATURE)&&time_temp<20) //等待DQ为高电平
+ 461   1        {
+ 462   2          time_temp++;
+ 463   2          delay_10us(1);
+ 464   2        }
+ 465   1        if(time_temp>=20)return 1;  //如果超时则强制返回1
+ 466   1        return 0;
+ 467   1      }
+ 468          
+ 469          /*******************************************************************************
+ 470          * 函 数 名         : ds18b20_read_bit
+ 471          * 函数功能       : 从DS18B20读取一个位
+ 472          * 输    入         : 无
+ 473          * 输    出         : 1/0
+ 474          *******************************************************************************/
+ 475          u8 ds18b20_read_bit(void)
+ 476          {
+ 477   1        u8 dat=0;
+ 478   1        
+ 479   1        TEMPATURE=0;
+ 480   1        _nop_();_nop_();
+C51 COMPILER V9.60.7.0   MAIN                                                              02/21/2025 18:08:40 PAGE 9   
+
+ 481   1        TEMPATURE=1;  
+ 482   1        _nop_();_nop_(); //该段时间不能过长，必须在15us内读取数据
+ 483   1        if(TEMPATURE)dat=1; //如果总线上为1则数据dat为1，否则为0
+ 484   1        else dat=0;
+ 485   1        delay_10us(5);
+ 486   1        return dat;
+ 487   1      } 
+ 488          
+ 489          /*******************************************************************************
+ 490          * 函 数 名         : ds18b20_read_byte
+ 491          * 函数功能       : 从DS18B20读取一个字节
+ 492          * 输    入         : 无
+ 493          * 输    出         : 一个字节数据
+ 494          *******************************************************************************/
+ 495          u8 ds18b20_read_byte(void)
+ 496          {
+ 497   1        u8 i=0;
+ 498   1        u8 dat=0;
+ 499   1        u8 temp=0;
+ 500   1      
+ 501   1        for(i=0;i<8;i++)//循环8次，每次读取一位，且先读低位再读高位
+ 502   1        {
+ 503   2          temp=ds18b20_read_bit();
+ 504   2          dat=(temp<<7)|(dat>>1);
+ 505   2        }
+ 506   1        return dat; 
+ 507   1      }
+ 508          
+ 509          /*******************************************************************************
+ 510          * 函 数 名         : ds18b20_write_byte
+ 511          * 函数功能       : 写一个字节到DS18B20
+ 512          * 输    入         : dat：要写入的字节
+ 513          * 输    出         : 无
+ 514          *******************************************************************************/
+ 515          void ds18b20_write_byte(u8 dat)
+ 516          {
+ 517   1        u8 i=0;
+ 518   1        u8 temp=0;
+ 519   1      
+ 520   1        for(i=0;i<8;i++)//循环8次，每次写一位，且先写低位再写高位
+ 521   1        {
+ 522   2          temp=dat&0x01;//选择低位准备写入
+ 523   2          dat>>=1;//将次高位移到低位
+ 524   2          if(temp)
+ 525   2          {
+ 526   3            TEMPATURE=0;
+ 527   3            _nop_();_nop_();
+ 528   3            TEMPATURE=1;  
+ 529   3            delay_10us(6);
+ 530   3          }
+ 531   2          else
+ 532   2          {
+ 533   3            TEMPATURE=0;
+ 534   3            delay_10us(6);
+ 535   3            TEMPATURE=1;
+ 536   3            _nop_();_nop_();  
+ 537   3          } 
+ 538   2        } 
+ 539   1      }
+ 540          
+ 541          /*******************************************************************************
+ 542          * 函 数 名         : ds18b20_start
+C51 COMPILER V9.60.7.0   MAIN                                                              02/21/2025 18:08:40 PAGE 10  
+
+ 543          * 函数功能       : 开始温度转换
+ 544          * 输    入         : 无
+ 545          * 输    出         : 无
+ 546          *******************************************************************************/
+ 547          void ds18b20_start(void)
+ 548          {
+ 549   1        ds18b20_reset();//复位
+ 550   1        ds18b20_check();//检查DS18B20
+ 551   1        ds18b20_write_byte(0xcc);//SKIP ROM
+ 552   1          ds18b20_write_byte(0x44);//转换命令 
+ 553   1      }
+ 554          
+ 555          /*******************************************************************************
+ 556          * 函 数 名         : ds18b20_init
+ 557          * 函数功能       : 初始化DS18B20的IO口 DQ 同时检测DS的存在
+ 558          * 输    入         : 无
+ 559          * 输    出         : 1:不存在，0:存在
+ 560          *******************************************************************************///////////////////////////
+             -///////////////////////
+ 561          u8 ds18b20_init(void)
+ 562          {
+ 563   1        ds18b20_reset();
+ 564   1        return ds18b20_check(); 
+ 565   1      }
+ 566          
+ 567          /*******************************************************************************
+ 568          * 函 数 名         : ds18b20_read_temperture
+ 569          * 函数功能       : 从ds18b20得到温度值
+ 570          * 输    入         : 无
+ 571          * 输    出         : 温度数据
+ 572          *******************************************************************************///////////////////////////
+             -///////////////////////
+ 573          float temperature_read(void)
+ 574          {
+ 575   1        float temp;
+ 576   1        u8 dath=0;
+ 577   1        u8 datl=0;
+ 578   1        u16 value=0;
+ 579   1      
+ 580   1        ds18b20_start();//开始转换
+ 581   1        ds18b20_reset();//复位
+ 582   1        ds18b20_check();
+ 583   1        ds18b20_write_byte(0xcc);//SKIP ROM
+ 584   1          ds18b20_write_byte(0xbe);//读存储器
+ 585   1      
+ 586   1        datl=ds18b20_read_byte();//低字节
+ 587   1        dath=ds18b20_read_byte();//高字节
+ 588   1        value=(dath<<8)+datl;//合并为16位数据
+ 589   1      
+ 590   1        if((value&0xf800)==0xf800)//判断符号位，负温度
+ 591   1        {
+ 592   2          value=(~value)+1; //数据取反再加1
+ 593   2          temp=value*(-0.0625);//乘以精度 
+ 594   2        }
+ 595   1        else //正温度
+ 596   1        {
+ 597   2          temp=value*0.0625;  
+ 598   2        }
+ 599   1        return temp;
+ 600   1      }
+ 601          
+ 602          //空气湿度传感器操作函数
+C51 COMPILER V9.60.7.0   MAIN                                                              02/21/2025 18:08:40 PAGE 11  
+
+ 603          //复位DHT11
+ 604          void DHT11_Rst(void)     
+ 605          {                 
+ 606   1        MOISTURE_AIR=1;
+ 607   1        delay_10us(1);
+ 608   1        MOISTURE_AIR=0;   //拉低DQ
+ 609   1          delay_ms(25);   //拉低至少18ms
+ 610   1          MOISTURE_AIR=1;   //DQ=1 
+ 611   1        delay_10us(3);  //主机拉高20~40us
+ 612   1      }
+ 613          //等待DHT11的回应
+ 614          //返回1:未检测到DHT11的存在
+ 615          //返回0:存在
+ 616          u8 DHT11_Check(void)     
+ 617          {   
+ 618   1        u8 retry=0;
+ 619   1        
+ 620   1        while (!MOISTURE_AIR&&retry<100)//判断从机发出 80us 的低电平响应信号是否结束
+ 621   1        {
+ 622   2          retry++;
+ 623   2          _nop_();
+ 624   2        };
+ 625   1        if(retry>=100)return 1;
+ 626   1        else retry=0;
+ 627   1          while (MOISTURE_AIR&&retry<100)//判断从机发出 80us 的高电平是否结束?Ｈ缃崾?则主机进入数据接收状态
+ 628   1        {
+ 629   2          retry++;
+ 630   2          _nop_();
+ 631   2        };   
+ 632   1        if(retry>=100)return 1;     
+ 633   1        return 0;
+ 634   1      }
+ 635          
+ 636          
+ 637          //DHT11初始化 ////////////////////////////////////////////////////////////////////////////////////////////
+             -//////
+ 638          //返回0：初始化成功，1：失败
+ 639          u8 DHT11_Init(void)
+ 640          {
+ 641   1        MOISTURE_AIR=1;
+ 642   1        DHT11_Rst();    
+ 643   1        return DHT11_Check(); 
+ 644   1      }
+ 645          
+ 646          //从DHT11读取一个字节
+ 647          //返回值：读到的数据
+ 648          u8 DHT11_Read_Byte(void)    
+ 649          {        
+ 650   1          u8 i,temp;
+ 651   1        u8 data_byte=0; 
+ 652   1        u8 retry=0;
+ 653   1      
+ 654   1          for(i=0;i<8;i++)//接收8bit的数据 
+ 655   1          { 
+ 656   2      //    while(!MOISTURE_AIR);//等待50us的低电平开始信号结束
+ 657   2          while (!MOISTURE_AIR&&retry<50)//等待50us的低电平开始信号结束
+ 658   2          {
+ 659   3            retry++;
+ 660   3            _nop_();
+ 661   3          };
+ 662   2          retry=0; 
+ 663   2          delay_10us(3);//等待40us 
+C51 COMPILER V9.60.7.0   MAIN                                                              02/21/2025 18:08:40 PAGE 12  
+
+ 664   2          temp=0;//时间为26us-28us?１硎窘邮盏奈?数据'0' 
+ 665   2          if(MOISTURE_AIR==1) 
+ 666   2            temp=1; //如果26us-28us之后?；刮?高电平?Ｔ虮硎窘邮盏氖?据为'1' 
+ 667   2      //    while(MOISTURE_AIR);//等待数据信号高电平??'0'为26us-28us??'1'为70us
+ 668   2          while (MOISTURE_AIR&&retry<100)//等待数据信号高电平??'0'为26us-28us??'1'为70us
+ 669   2          {
+ 670   3            retry++;
+ 671   3            _nop_();
+ 672   3          };
+ 673   2          data_byte<<=1;//接收的数据为高位在前?∮乙篇? 
+ 674   2          data_byte|=temp; 
+ 675   2          } 
+ 676   1      
+ 677   1          return data_byte;
+ 678   1      }
+ 679          
+ 680          //从DHT11读取一次数据/////////////////////////////////////////////////////////////////////////////////////
+             -/////////////
+ 681          //temp:温度值(范围:0~50°)
+ 682          //humi:湿度值(范围:20%~90%)
+ 683          //返回值：0,正常;1,读取失败
+ 684          u8 air_moisture_read(u8 *temp,u8 *humi)    
+ 685          {        
+ 686   1        u8 buf[5];
+ 687   1        u8 i;
+ 688   1        DHT11_Rst();
+ 689   1        if(DHT11_Check()==0)
+ 690   1        {
+ 691   2          for(i=0;i<5;i++)//读取40位数据
+ 692   2          {
+ 693   3            buf[i]=DHT11_Read_Byte();
+ 694   3          }
+ 695   2          if((buf[0]+buf[1]+buf[2]+buf[3])==buf[4])
+ 696   2          {
+ 697   3            *humi=buf[0];
+ 698   3            *temp=buf[2];
+ 699   3          }
+ 700   2          
+ 701   2        }else return 1;
+ 702   1        return 0;     
+ 703   1      }
+ 704          
+ 705          
+ 706          
+ 707          
+ 708          
+ 709          
+ 710          
+ 711          
+ 712          
+ 713          
+ 714          
+ 715          
+ 716          
+ 717          
+ 718          
+ 719          
+ 720          
+ 721          
+ 722          
+ 723          
+ 724          
+C51 COMPILER V9.60.7.0   MAIN                                                              02/21/2025 18:08:40 PAGE 13  
+
+ 725          
+ 726          
+ 727          
+ 728          
+ 729          
+ 730          
+ 731          
+ 732          
+ 733          
+ 734          
+ 735          
+ 736          
+ 737          
+ 738          
+ 739          
+ 740          
+ 741          
+ 742          
+ 743          
+ 744          
+ 745          
+ 746          
+ 747          
+ 748          
+ 749          
+ 750          u8 keytmp=0;
+ 751          u8 key=0;
+ 752          //温度传感器
+ 753          u16 stay_time;
+ 754          int temp_value;
+ 755          u8 tempbuf[8];
+ 756          
+ 757          //空气湿度传感器
+ 758          u8 temp=0;
+ 759          u8 humi=0;
+ 760          u8 i=0;
+ 761          u8 temp_buf2[3],humi_buf[3];
+ 762          u8 gsmg_code[17]={0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,
+ 763                  0x7f,0x6f,0x77,0x7c,0x39,0x5e,0x79,0x71};
+ 764          
+ 765          //光强传感器
+ 766          u16 adc_light_value=0;
+ 767          u8 adc_light_buf[4];
+ 768                  
+ 769          //
+ 770          u16 adc_water_level_value=0;
+ 771          u8 adc_water_level_buf[4];
+ 772                  
+ 773                  
+ 774          void main()
+ 775          {
+ 776   1        lcd1602_init();
+ 777   1        lcd1602_show_string(0,0,"Self-testing");
+ 778   1        stay_time=0;
+ 779   1        ds18b20_init();
+ 780   1        DHT11_Init();
+ 781   1        spray_control(0);
+ 782   1        light_control(0);
+ 783   1        pump_control(500);
+ 784   1        lcd1602_init();
+ 785   1        lcd1602_show_string(0,0,"Self-test");
+ 786   1        lcd1602_show_string(0,1,"Success!!!");
+C51 COMPILER V9.60.7.0   MAIN                                                              02/21/2025 18:08:40 PAGE 14  
+
+ 787   1        while(1)
+ 788   1        {
+ 789   2              
+ 790   2          stay_time++;
+ 791   2           if(stay_time==22000){
+ 792   3             
+ 793   3            temp_value=temperature_read()*10;//DS18B20
+ 794   3            if(temp_value<0)
+ 795   3            {
+ 796   4              temp_value=-temp_value;
+ 797   4              tempbuf[0]='-'; 
+ 798   4            }
+ 799   3            else
+ 800   3              tempbuf[0]=' ';
+ 801   3            if(temp_value>=1000)
+ 802   3              tempbuf[1]=temp_value/1000+0x30;
+ 803   3            else
+ 804   3              tempbuf[1]=' ';
+ 805   3            tempbuf[2]=temp_value%1000/100+0x30;
+ 806   3            tempbuf[3]=temp_value%1000%100/10+0x30;
+ 807   3            tempbuf[4]='.';
+ 808   3            tempbuf[5]=temp_value%1000%100%10+0x30;
+ 809   3            tempbuf[6]='C';
+ 810   3            tempbuf[7]='\0';  
+ 811   3                
+ 812   3            adc_light_value=xpt2046_read_adc_value(0xA4);//光敏电阻
+ 813   3            adc_light_buf[0]=adc_light_value%1000/100+0x30;
+ 814   3            adc_light_buf[1]=adc_light_value%1000%100/10+0x30;
+ 815   3            adc_light_buf[2]=adc_light_value%1000%100%10+0x30;
+ 816   3            adc_light_buf[3]='\0';
+ 817   3              
+ 818   3            adc_water_level_value=xpt2046_read_adc_value(0xE4);//水位传感器
+ 819   3            adc_water_level_buf[0]=adc_water_level_value%1000/100+0x30;
+ 820   3            adc_water_level_buf[1]=adc_water_level_value%1000%100/10+0x30;
+ 821   3            adc_water_level_buf[2]=adc_water_level_value%1000%100%10+0x30;
+ 822   3            adc_water_level_buf[3]='\0';      
+ 823   3           
+ 824   3            air_moisture_read(&temp,&humi);//DHT11
+ 825   3            temp_buf2[0]=temp/10+0x30;  
+ 826   3            temp_buf2[1]=temp%10+0x30;
+ 827   3            temp_buf2[2]='\0';
+ 828   3      
+ 829   3            humi_buf[0]=humi/10+0x30; 
+ 830   3            humi_buf[1]=humi%10+0x30;
+ 831   3            humi_buf[2]='\0';
+ 832   3            
+ 833   3            stay_time=0;
+ 834   3          }
+ 835   2           
+ 836   2      
+ 837   2      
+ 838   2          
+ 839   2          // keytmp=key_matrix_flip_scan();
+ 840   2          // if((key==1||key==2||key==3||key==4||key==5)&&keytmp==0)
+ 841   2          // { }
+ 842   2          // else
+ 843   2          //  key=keytmp;
+ 844   2          key=key_matrix_flip_scan();
+ 845   2          switch(key)
+ 846   2          {
+ 847   3            case(1):{
+ 848   4              lcd1602_init();
+C51 COMPILER V9.60.7.0   MAIN                                                              02/21/2025 18:08:40 PAGE 15  
+
+ 849   4              lcd1602_show_string(0,0,"Temperature:");//第一行显示
+ 850   4              lcd1602_show_string(0,1,tempbuf);//第二行显示
+ 851   4              break;  
+ 852   4            }
+ 853   3            case(2):{
+ 854   4              lcd1602_init();
+ 855   4              lcd1602_show_string(0,0,"Soil Moisture:");//第一行显示
+ 856   4              lcd1602_show_string(0,1,"N/A");//第二行显示
+ 857   4              break;  
+ 858   4            }
+ 859   3            case(3):{
+ 860   4              lcd1602_init();
+ 861   4              lcd1602_show_string(0,0,"Water Level:");//第一行显示
+ 862   4              lcd1602_show_string(0,1,adc_water_level_buf);//第二行显示
+ 863   4              break;  
+ 864   4            }
+ 865   3            case(4):{
+ 866   4              lcd1602_init();
+ 867   4              lcd1602_show_string(0,0,"Air Moisture:");//第一行显示
+ 868   4              lcd1602_show_string(0,1,humi_buf);//第二行显示
+ 869   4              break;  
+ 870   4            }
+ 871   3            case(5):{
+ 872   4              lcd1602_init();
+ 873   4              lcd1602_show_string(0,0,"Light Intensity:");//第一行显示
+ 874   4              lcd1602_show_string(0,1,adc_light_buf);//第二行显示
+ 875   4              break;  
+ 876   4            }
+ 877   3            case(6):{
+ 878   4              lcd1602_init();
+ 879   4              lcd1602_show_string(0,0,"Shield Rising");
+ 880   4              step_motor_control(1);
+ 881   4              lcd1602_init();
+ 882   4              lcd1602_show_string(0,0,"Shield Rised");
+ 883   4              break;  
+ 884   4            }
+ 885   3            case(7):{
+ 886   4              lcd1602_init();
+ 887   4              lcd1602_show_string(0,0,"Shield Falling");
+ 888   4              step_motor_control(0);
+ 889   4              lcd1602_init();
+ 890   4              lcd1602_show_string(0,0,"Shield Falled");
+ 891   4              break;  
+ 892   4            }
+ 893   3            case(8):{
+ 894   4              lcd1602_init();
+ 895   4              lcd1602_show_string(0,0,"Pump Working");
+ 896   4              pump_control(5000);
+ 897   4              lcd1602_show_string(0,0,"Pump Worked 5s");
+ 898   4              break;  
+ 899   4            }
+ 900   3            case(9):{
+ 901   4              lcd1602_init();
+ 902   4              lcd1602_show_string(0,0,"Spray Work Begin");
+ 903   4              spray_control(1);
+ 904   4              break;  
+ 905   4            }
+ 906   3            case(10):{
+ 907   4              lcd1602_init();
+ 908   4              lcd1602_show_string(0,0,"Spray Work Stop");
+ 909   4              spray_control(0);
+ 910   4              break;  
+C51 COMPILER V9.60.7.0   MAIN                                                              02/21/2025 18:08:40 PAGE 16  
+
+ 911   4            }
+ 912   3            case(11):{
+ 913   4              lcd1602_init();
+ 914   4              lcd1602_show_string(0,0,"LED Work Begin");
+ 915   4              light_control(1);
+ 916   4              break;  
+ 917   4            }
+ 918   3            case(12):{
+ 919   4              lcd1602_init();
+ 920   4              lcd1602_show_string(0,0,"LED Work Stop");
+ 921   4              light_control(0);
+ 922   4              break;  
+ 923   4            }
+ 924   3            case(13):{
+ 925   4              lcd1602_init();
+ 926   4              lcd1602_show_string(0,0,"Self-testing");
+ 927   4              stay_time=0;
+ 928   4              ds18b20_init();
+ 929   4              DHT11_Init();
+ 930   4              spray_control(0);
+ 931   4              light_control(0);
+ 932   4              pump_control(500);
+ 933   4              lcd1602_init();
+ 934   4              lcd1602_show_string(0,0,"Self-test");
+ 935   4              lcd1602_show_string(0,1,"Success!!!");
+ 936   4              break;  
+ 937   4            }
+ 938   3            case(14):{
+ 939   4              break;  
+ 940   4            }
+ 941   3            case(15):{
+ 942   4              break;  
+ 943   4            }
+ 944   3            case(16):{
+ 945   4              break;  
+ 946   4            }
+ 947   3            default:{
+ 948   4              break;
+ 949   4            }
+ 950   3          }
+ 951   2        }
+ 952   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   2230    ----
+   CONSTANT SIZE    =    256    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     55      31
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
