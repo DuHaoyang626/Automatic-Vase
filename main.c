@@ -41,10 +41,10 @@ sbit DOUT = P3^7;	  //??ADC??
 #define LCD1602_4OR8_DATA_INTERFACE	1	//????4????LCD1602
 
 // ????????,???,????
-#define STEPMOTOR_MAXSPEED        100//????????,????1
-#define STEPMOTOR_MINSPEED        350//????????
+#define STEPMOTOR_MAXSPEED        1//????????,????1
+#define STEPMOTOR_MINSPEED        5//????????
 #define STEPMOTOR_SHIELD_HIGHT    10//?????
-#define STEPMOTOR_SHIELD_RANGE    300//?????????
+#define STEPMOTOR_SHIELD_RANGE    750//?????????
 
 //????
 //????????
@@ -78,7 +78,8 @@ u16 StepMotor_status=0;
 //??????
 u8 key=0;
 
-
+//test2????
+u16 allow_test2=0;
 //????
 
 //??2us
@@ -876,7 +877,7 @@ void step_motor_control(u16 input){
                 step_motor_28BYJ48_send_pulse(step++,dir);
 								time++;
 								if(step==8)step=0;		
-								delay_10us(speed);
+								delay_ms(speed);
             }
 			StepMotor_status=1;
         }
@@ -887,7 +888,7 @@ void step_motor_control(u16 input){
                 step_motor_28BYJ48_send_pulse(step++,dir);
 								time++;
 								if(step==8)step=0;		
-								delay_10us(speed);
+								delay_ms(speed);
             }
 			StepMotor_status=0;
         }
@@ -951,12 +952,12 @@ void all_data_read(void)
 	soil_moisture_buf[3]='\0';
 
 	//????
-	soil_moisture=soil_moisture_read();
+	water_lavel=water_lavel_read();
 
-	soil_moisture_buf[0]=soil_moisture%1000/100+0x30;
-	soil_moisture_buf[1]=soil_moisture%1000%100/10+0x30;
-	soil_moisture_buf[2]=soil_moisture%1000%100%10+0x30;
-	soil_moisture_buf[3]='\0';
+	water_lavel_buf[0]=water_lavel%1000/100+0x30;
+	water_lavel_buf[1]=water_lavel%1000%100/10+0x30;
+	water_lavel_buf[2]=water_lavel%1000%100%10+0x30;
+	water_lavel_buf[3]='\0';
 
 	//????
 	air_moisture_read();
@@ -986,6 +987,7 @@ void all_init(void)
 	pump_control(500);
 	spray_control(0);
 	light_control(0);
+	allow_test2=0;
 	lcd1602_init();
 	lcd1602_show_string(0,0,"Self-test");
 	lcd1602_show_string(0,1,"Success!!!");
@@ -997,7 +999,7 @@ void all_init(void)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //??????
-void test(void)
+void test1(void)
 {
 	key=key_matrix_flip_scan();
 	switch(key)
@@ -1080,13 +1082,19 @@ void test(void)
 			break;	
 		}
 		case(13):{
-			all_init();
+			lcd1602_init();
+			lcd1602_show_string(0,0,"AUTO Work Begin");
+			allow_test2=1;
 			break;	
 		}
 		case(14):{
+			lcd1602_init();
+			lcd1602_show_string(0,0,"AUTO Work Stop");
+			allow_test2=0;
 			break;	
 		}
 		case(15):{
+			all_init();
 			break;	
 		}
 		case(16):{
@@ -1098,8 +1106,29 @@ void test(void)
 	}
 }
 
+u16 need_temp=270;
+u16 need_light_intensity=128;
+u16 need_soil_moisture=0;
+u16 need_air_moisture=23;
+
+void test2(void){
+	if(temp_value > need_temp)
+		step_motor_control(1);
+	if(temp_value < need_temp)
+		step_motor_control(0);
+
+	if(light_intensity > need_light_intensity)
+		light_control(1);
+	if(light_intensity < need_light_intensity)
+		light_control(0);
+
+	if(humi < need_air_moisture)
+		spray_control(1);
+	if(humi > need_air_moisture)
+		spray_control(0);
 
 
+}
 
 
 
@@ -1116,6 +1145,9 @@ int main()
 			all_data_read();
 			stay_time=0;
 		}
-		test();
+		test1();
+		if(allow_test2)
+			test2();
+
 	}
 }
