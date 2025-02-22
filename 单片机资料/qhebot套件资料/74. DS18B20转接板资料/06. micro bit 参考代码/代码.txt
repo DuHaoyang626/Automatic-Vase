@@ -1,0 +1,19 @@
+from pyb import Pin,UART,Timer
+from ds18x20 import DS18X20
+
+uart=UART(1,9600)
+tim=Timer(1,freq=5000)
+tim.counter()
+tim.freq(0.5)
+Pin("Y11",Pin.OUT_PP).low()
+Pin("Y9",Pin.OUT_PP).high()
+pyb.delay(100)
+d=DS18X20(Pin('Y10'))
+while True:
+    t1=d.read_temp()#读取DS18B20的温度
+    t2='%.3f' %t1#将浮点数转换为字符串
+    uart.write('DS18B20当前温度：')
+    uart.write(t2)#UART1发送字符串
+    uart.write('℃')
+    uart.write('\r\n')
+    pyb.delay(4000)

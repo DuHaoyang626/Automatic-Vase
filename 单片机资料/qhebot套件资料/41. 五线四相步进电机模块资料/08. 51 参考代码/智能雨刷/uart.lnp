@@ -1,0 +1,6 @@
+"STARTUP.obj",
+"main.obj",
+"timer2.obj",
+"stepper_motor_5L4P.obj" 
+TO "uart" 
+RAMSIZE(256) 

@@ -1,0 +1,83 @@
+C51 COMPILER V9.54   MAIN                                                                  06/25/2024 15:38:02 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Obj\main.obj
+COMPILER INVOKED BY: D:\Keil5C51\C51\BIN\C51.EXE User\main.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\App\24c02;.\App\iic;.\App
+                    -\key;.\App\smg;.\Public;.\App\ds18b20;.\App\ds1302;.\App\ired;.\App\time;.\App\xpt2046;.\App\pwm;.\App\lcd1602;.\App\lcd
+                    -9648) DEBUG OBJECTEXTEND PRINT(.\Obj\main.lst) OBJECT(.\Obj\main.obj)
+
+line level    source
+
+   1          /**************************************************************************************
+   2          深圳市普中科技有限公司（PRECHIN 普中）
+   3          技术支持：www.prechin.net
+   4          PRECHIN
+   5           普中
+   6           
+   7          实验名称：LCD9648液晶显示实验
+   8          接线说明：      
+   9          实验现象：下载程序后，LCD9648上显示字符汉字信息
+  10          注意事项：                                                                                                                                                                
+  11          ***************************************************************************************/
+  12          #include "public.h"
+  13          #include "lcd9648.h"
+  14          #include "pic.h"
+  15          
+  16          /*******************************************************************************
+  17          * 函 数 名       : main
+  18          * 函数功能               : 主函数
+  19          * 输    入       : 无
+  20          * 输    出       : 无
+  21          *******************************************************************************/
+  22          void main()
+  23          {       
+  24   1              lcd9648_init();
+  25   1      
+  26   1              delay_ms(300);
+  27   1      
+  28   1              while(1)
+  29   1              {
+  30   2                      //清屏
+  31   2                      lcd9648_clear();
+  32   2                      
+  33   2                      //显示单个字符
+  34   2                      lcd_show_char(0,0,'H');
+  35   2                      lcd_show_char(8,0,'e');
+  36   2                      lcd_show_char(16,0,'l');
+  37   2                      lcd_show_char(24,0,'l');
+  38   2                      lcd_show_char(32,0,'o');
+  39   2              
+  40   2                      //显示数字
+  41   2                      lcd_show_num(48,0,12345,5,0);
+  42   2              
+  43   2                      //显示字符串
+  44   2                      lcd_show_string(0,1,12,"HELLO WORLD");
+  45   2              
+  46   2                      //显示中文
+  47   2                      lcd_show_16HZ(0,2,"普中科技");
+  48   2                      
+  49   2                      delay_ms(2000);
+  50   2                      //显示图片
+  51   2                      lcd_show_Image(gImage_pic);
+  52   2                      
+  53   2                      delay_ms(2000);
+C51 COMPILER V9.54   MAIN                                                                  06/25/2024 15:38:02 PAGE 2   
+
+  54   2                              
+  55   2              }       
+  56   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    135    ----
+   CONSTANT SIZE    =    597    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

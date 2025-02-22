@@ -1,0 +1,224 @@
+C51 COMPILER V9.52.0.0   TIMER                                                             07/03/2020 15:37:52 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE TIMER
+OBJECT MODULE PLACED IN timer.OBJ
+COMPILER INVOKED BY: D:\keil4\a1\C51\BIN\C51.EXE timer.c BROWSE DEBUG OBJECTEXTEND TABS(2)
+
+line level    source
+
+   1          #include "timer.h"
+   2          
+   3          int timer0_interrupt_counter_V = 0;
+   4          int timer1_interrupt_counter_V = 0;
+   5          int timer2_interrupt_counter_V = 0;
+   6          
+   7          int timer0_flag = 0;
+   8          int timer1_flag = 0;
+   9          int timer0_pwm_flag = 0;
+  10          int timer1_pwm_flag = 0;
+  11          
+  12          int timer0_reload_pwm_H_level_H_byte_time = 0;
+  13          int timer0_reload_pwm_H_level_L_byte_time = 0;
+  14          int timer0_reload_pwm_L_level_H_byte_time = 0;
+  15          int timer0_reload_pwm_L_level_L_byte_time = 0;
+  16          int timer0_PWM_pin_level_flag = 0;
+  17          
+  18          typedef unsigned int u16;
+  19          typedef unsigned char u8;
+  20          
+  21          void timer0_deal_f(){
+  22   1          static u16 timer0_interrupt_counter = 0;
+  23   1          TR0 = 0;
+  24   1          TH0 = 0xFC;
+  25   1          TL0 = 0x66;
+  26   1          TR0 = 1;
+  27   1          timer0_interrupt_counter++;
+  28   1          if( timer0_interrupt_counter >= timer0_interrupt_counter_V ) {  
+  29   2              timer0_interrupt_counter = 0;
+  30   2              TIMER_CallBackTable[0]();
+  31   2          }
+  32   1      }
+  33          
+  34          void timer0_pwm_deal_f(){
+  35   1        if(timer0_PWM_pin_level_flag == 1){
+  36   2          timer0_PWM_pin_level_flag = 0;
+  37   2          //改变电平为低电平
+  38   2          //TR0 = 0;
+  39   2          TH0 = timer0_reload_pwm_L_level_H_byte_time;
+  40   2          TL0 = timer0_reload_pwm_L_level_L_byte_time;
+  41   2          //TR0 = 1;
+  42   2          PWM0_PIN = 0;
+  43   2        }else{
+  44   2          timer0_PWM_pin_level_flag = 1;
+  45   2          //TR0 = 0;
+  46   2          TH0 = timer0_reload_pwm_H_level_H_byte_time;
+  47   2          TL0 = timer0_reload_pwm_H_level_L_byte_time;
+  48   2          //TR0 = 1;
+  49   2          PWM0_PIN = 1;
+  50   2        }
+  51   1      }
+  52          
+  53          
+  54          void timer0_IR() interrupt 1{
+  55   1          if(timer0_flag == 1){timer0_deal_f();}
+C51 COMPILER V9.52.0.0   TIMER                                                             07/03/2020 15:37:52 PAGE 2   
+
+  56   1          else if(timer0_pwm_flag == 1){ timer0_pwm_deal_f(); }
+  57   1      }
+  58          
+  59          
+  60          void timer0_start(int ms, TIMER_CallBackType AppCBFun){
+  61   1        timer0_flag = 1;
+  62   1        timer0_interrupt_counter_V = ms;
+  63   1      
+  64   1        TIMER_CallBackTable[0] = AppCBFun;
+  65   1        
+  66   1        TMOD &= 0xF0;    
+  67   1        TMOD |= 0x01;    
+  68   1        TH0 = 0xFC;
+  69   1        TL0 = 0x66;
+  70   1        EA = 1;   
+  71   1        ET0 = 1; 
+  72   1        TR0 = 1;  
+  73   1        PT0 = 1;
+  74   1      
+  75   1        if(timer0_interrupt_counter_V < 1 || timer0_interrupt_counter_V > 60000 ){ TR0  = 0;}
+  76   1      }
+  77          
+  78          void timer0_stop(){
+  79   1        ET0 = 0; 
+  80   1        TR0 = 0; 
+  81   1      }
+  82          
+  83          void timer1_IR() interrupt 3{
+  84   1          static u16 timer1_interrupt_counter = 0;
+  85   1          TR1 = 0; 
+  86   1          TH1 = 0xFC;
+  87   1          TL1 = 0x6b;
+  88   1          TR1 = 1; 
+  89   1          timer1_interrupt_counter++;
+  90   1          if( timer1_interrupt_counter >= timer1_interrupt_counter_V ) {  
+  91   2              timer1_interrupt_counter = 0;
+  92   2              TIMER_CallBackTable[1]();
+  93   2          }
+  94   1      }
+  95          
+  96          void timer1_start(int ms, TIMER_CallBackType AppCBFun){
+  97   1        timer1_flag = 1;
+  98   1        timer1_interrupt_counter_V = ms;
+  99   1        TIMER_CallBackTable[1] = AppCBFun;
+ 100   1        
+ 101   1        TMOD &= 0x0f;    
+ 102   1        TMOD |= 0x10;    
+ 103   1        TH1 = 0xFC;
+ 104   1        TL1 = 0x6b;
+ 105   1        EA = 1;   
+ 106   1        ET1 = 1; 
+ 107   1        TR1 = 1; 
+ 108   1        
+ 109   1        if(timer1_interrupt_counter_V < 1 || timer1_interrupt_counter_V > 60000 ){ TR1 = 0;}
+ 110   1      }
+ 111          
+ 112          void timer1_stop(){
+ 113   1        ET1 = 0; 
+ 114   1        TR1 = 0; 
+ 115   1      }
+ 116          
+ 117          void timer2_IR() interrupt 5{
+C51 COMPILER V9.52.0.0   TIMER                                                             07/03/2020 15:37:52 PAGE 3   
+
+ 118   1          static u16 timer2_interrupt_counter = 0; 
+ 119   1          TF2 = 0;
+ 120   1          timer2_interrupt_counter++;
+ 121   1          if( timer2_interrupt_counter >= timer2_interrupt_counter_V ) {  
+ 122   2              timer2_interrupt_counter = 0;
+ 123   2              TIMER_CallBackTable[2]();
+ 124   2          }
+ 125   1      }
+ 126          
+ 127          void timer2_start(int ms, TIMER_CallBackType AppCBFun){
+ 128   1        timer2_interrupt_counter_V = ms;
+ 129   1        TIMER_CallBackTable[2] = AppCBFun;
+ 130   1        
+ 131   1        T2MOD = 0;     
+ 132   1        T2CON = 0;     
+ 133   1      
+ 134   1        RCAP2L = 0x66;     
+ 135   1        RCAP2H = 0xFC;     
+ 136   1      
+ 137   1        EA = 1;
+ 138   1        ET2 = 1;
+ 139   1        TR2 = 1; 
+ 140   1        PT2 = 1;
+ 141   1        TF2 = 0;
+ 142   1      }
+ 143          
+ 144          
+ 145          
+ 146          void timer0_pwm_start(int frequency, float duty){ 
+ 147   1        long int tmp_t = 1000000*11.0592/12/frequency ;
+ 148   1        long int  timer0_reload_pwm_H_level_H_byte_time_TMP = 0;
+ 149   1        long int  timer0_reload_pwm_H_level_L_byte_time_TMP = 0;
+ 150   1        long int  timer0_reload_pwm_L_level_H_byte_time_TMP = 0;
+ 151   1        long int  timer0_reload_pwm_L_level_L_byte_time_TMP = 0;
+ 152   1      
+ 153   1        if( frequency >= 3000){tmp_t = (long int)tmp_t*6.8/10;}
+ 154   1        else if( frequency >= 2000){tmp_t = (long int)tmp_t*7.5/10;}
+ 155   1        else if( frequency >= 900){ tmp_t = tmp_t*9/10; }
+ 156   1      
+ 157   1        timer0_pwm_flag = 1;
+ 158   1        
+ 159   1        if(duty >= 1 && duty <= 99 && frequency >=17){
+ 160   2            timer0_reload_pwm_H_level_H_byte_time_TMP = (long int)(65536 - tmp_t*duty/100 + 0 )/256;
+ 161   2            timer0_reload_pwm_H_level_L_byte_time_TMP = (long int)(65536 - tmp_t*duty/100 + 0 )%256;
+ 162   2            timer0_reload_pwm_L_level_H_byte_time_TMP = (long int)(65536 - tmp_t*(100.0-duty)/100 + 0 )/256;
+ 163   2            timer0_reload_pwm_L_level_L_byte_time_TMP = (long int)(65536 - tmp_t*(100.0-duty)/100 + 0 )%256;
+ 164   2            if(timer0_reload_pwm_L_level_H_byte_time > 65536 || timer0_reload_pwm_L_level_L_byte_time > 65536 ){
+ 165   3              timer0_reload_pwm_L_level_L_byte_time_TMP = 65536;
+ 166   3              timer0_reload_pwm_L_level_L_byte_time_TMP = 65536;
+ 167   3            }else if(timer0_reload_pwm_H_level_H_byte_time_TMP > 65536 || timer0_reload_pwm_H_level_L_byte_time_TMP
+             - > 65536 ){
+ 168   3              timer0_reload_pwm_H_level_H_byte_time_TMP = 65536;
+ 169   3              timer0_reload_pwm_H_level_L_byte_time_TMP = 65536;
+ 170   3            }
+ 171   2            
+ 172   2            timer0_reload_pwm_H_level_H_byte_time = (int)timer0_reload_pwm_H_level_H_byte_time_TMP;
+ 173   2            timer0_reload_pwm_H_level_L_byte_time = (int)timer0_reload_pwm_H_level_L_byte_time_TMP;
+ 174   2            timer0_reload_pwm_L_level_H_byte_time = (int)timer0_reload_pwm_L_level_H_byte_time_TMP;
+ 175   2            timer0_reload_pwm_L_level_L_byte_time = (int)timer0_reload_pwm_L_level_L_byte_time_TMP;
+ 176   2          
+ 177   2            PWM0_PIN = 1;
+ 178   2            timer0_PWM_pin_level_flag = 1;
+C51 COMPILER V9.52.0.0   TIMER                                                             07/03/2020 15:37:52 PAGE 4   
+
+ 179   2          
+ 180   2            TMOD &= 0xF0;    
+ 181   2            TMOD |= 0x01;    
+ 182   2            TH0 = timer0_reload_pwm_H_level_H_byte_time;
+ 183   2            TL0 = timer0_reload_pwm_H_level_L_byte_time;
+ 184   2            EA = 1;   
+ 185   2            ET0 = 1; 
+ 186   2            PT0=1;
+ 187   2            TR0 = 1;  
+ 188   2        }
+ 189   1        else if(duty < 1){  PWM0_PIN = 0; }
+ 190   1        else if(duty > 99){ PWM0_PIN = 1; }
+ 191   1        else if(frequency < 17 && frequency > 0){
+ 192   2          
+ 193   2        }
+ 194   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1368    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     39      26
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

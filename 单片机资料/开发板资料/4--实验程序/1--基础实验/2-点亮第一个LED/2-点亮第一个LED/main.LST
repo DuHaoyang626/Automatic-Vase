@@ -1,0 +1,52 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              12/02/2024 21:09:34 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Program Files\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND TABS(2)
+
+line level    source
+
+   1          /**************************************************************************************
+   2          深圳市普中科技有限公司（PRECHIN 普中）
+   3          技术支持：www.prechin.net
+   4          PRECHIN
+   5           普中
+   6           
+   7          实验名称：点亮第一个LED
+   8          接线说明：  
+   9          实验现象：下载程序后“LED模块”的D1指示灯点亮
+  10          注意事项：                                          
+  11          ***************************************************************************************/
+  12          #include "reg52.h"
+  13          
+  14          sbit LED1=P2^0; //将P2.0管脚定义为LED1
+  15          
+  16          /*******************************************************************************
+  17          * 函 数 名       : main
+  18          * 函数功能     : 主函数
+  19          * 输    入       : 无
+  20          * 输    出       : 无
+  21          *******************************************************************************/
+  22          void main()
+  23          {
+  24   1          //LED1端口设置为低电平
+  25   1        while(1)
+  26   1        {
+  27   2          LED1=0;
+  28   2        }   
+  29   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =      4    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,6 @@
+"STARTUP.obj",
+"main.obj",
+"LCD12864.obj",
+"timer2.obj" 
+TO "automitic_watering" 
+RAMSIZE(256) 

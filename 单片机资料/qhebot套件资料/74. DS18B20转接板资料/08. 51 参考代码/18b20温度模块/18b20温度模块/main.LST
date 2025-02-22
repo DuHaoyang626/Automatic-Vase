@@ -1,0 +1,77 @@
+C51 COMPILER V9.52.0.0   MAIN                                                              09/09/2019 15:36:32 PAGE 1   
+
+
+C51 COMPILER V9.52.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: D:\keil4\a1\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND TABS(2)
+
+line level    source
+
+   1          /*
+   2          *************************************************************************
+   3          *硬件平台: STC89C52RC
+   4          *开发平台：keil 4.7
+   5          *版权    ：沁和智能科技
+   6          *开始时间：2019.7.11
+   7          *结束时间：2019.7.11
+   8          *作者：    张文超
+   9          *备注：    未经允许，用于商业用途，必究责任
+  10          *************************************************************************
+  11          */
+  12          
+  13          #include <reg52.h>
+  14          #include "DS18B20.h"
+  15          #include <stdio.h>
+  16          
+  17          
+  18          void delay_ms(unsigned int t)
+  19          {
+  20   1          unsigned char a,b;
+  21   1          while(t--)
+  22   1          {
+  23   2            for(b=102;b>0;b--)
+  24   2            for(a=3;a>0;a--);
+  25   2          }
+  26   1      }
+  27          
+  28          void InitUART(void) 
+  29          {
+  30   1          TH1 = 0xFD;  //??11.0592mhz ?????9600
+  31   1          TL1 = TH1;
+  32   1          TMOD |= 0x20;   
+  33   1          SCON = 0x50;   
+  34   1          ES = 1;       
+  35   1          TR1 = 1;     
+  36   1          TI = 1;    
+  37   1          PS = 0;
+  38   1          EA = 1;      
+  39   1      }
+  40          
+  41          void main(){
+  42   1        float tmp = 0;
+  43   1        InitUART();
+  44   1        DS18B20Init();
+  45   1        //delay_ms(7000);
+  46   1        while(1){
+  47   2          delay_ms(500);
+  48   2          //tmp = read_temp();
+  49   2          //tmp = tmp * 0.0625;
+  50   2          printf("zazaaaa %2f\n", Get18B20Temp() );
+  51   2        }  
+  52   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+C51 COMPILER V9.52.0.0   MAIN                                                              09/09/2019 15:36:32 PAGE 2   
+
+   CODE SIZE        =     93    ----
+   CONSTANT SIZE    =     13    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       4
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

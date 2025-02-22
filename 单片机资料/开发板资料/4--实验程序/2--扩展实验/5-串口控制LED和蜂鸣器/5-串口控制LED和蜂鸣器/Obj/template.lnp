@@ -1,0 +1,6 @@
+".\Obj\main.obj",
+".\Obj\beep.obj",
+".\Obj\public.obj",
+".\Obj\uart.obj" 
+TO ".\Obj\template" 
+PRINT(".\Obj\template.m51") RAMSIZE(256) 
